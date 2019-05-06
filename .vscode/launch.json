@@ -14,7 +14,7 @@
             "name": "Solve",
             "type": "python",
             "request": "launch",
-            "program": "${workspaceFolder}/src/index.py",
+            "program": "${workspaceFolder}/index.py",
             "console": "integratedTerminal"
         }
     ]
