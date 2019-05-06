@@ -271,3 +271,13 @@ This reveals that:
     - hint2 cannot be marked
 Results:
     aaammabbammmaaa
+
+
+
+
+
+(?P<prefix>(a|b)*?)(?P<hint0>(a|m){3,}?)(?P<sep0>(a|b){1,}?)(?P<hint1>(a|m){2,}?)(?P<sep1>(a|b){1,}?)(?P<hint2>(a|m){2,})(?P<suffix>(a|b)*)
+aaaaaaaaabmm
+
+(?P<suffix>(a|b)*?)(?P<hint2>(a|m){2,})(?P<sep1>(a|b){1,}?)(?P<hint1>(a|m){2,}?)(?P<sep0>(a|b){1,}?)(?P<hint0>(a|m){3,}?)(?P<prefix>(a|b)*)
+mmbaaaaaaaaa

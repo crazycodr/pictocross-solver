@@ -4,29 +4,10 @@ import logging
 from PictoCrossSolver.PictoCross import Grid
 from PictoCrossSolver.Renderers import ConsoleRenderer
 from PictoCrossSolver.Solvers import *
+from PictoCrossSolver.Loaders import TextLoader
 
-# Create a 8,8 grid with a simple scenario taken from world's biggest picture cross
-grid = Grid(8, 8)
-grid.getRowZone(0).addHint(8)
-grid.getRowZone(1).addHint(7)
-grid.getRowZone(2).addHint(5)
-grid.getRowZone(3).addHint(3)
-grid.getRowZone(4).addHint(5)
-grid.getRowZone(5).addHint(6)
-grid.getRowZone(6).addHint(6)
-grid.getRowZone(7).addHint(3)
-grid.getColumnZone(0).addHint(1)
-grid.getColumnZone(1).addHint(2)
-grid.getColumnZone(1).addHint(1)
-grid.getColumnZone(2).addHint(3)
-grid.getColumnZone(2).addHint(3)
-grid.getColumnZone(3).addHint(3)
-grid.getColumnZone(3).addHint(4)
-grid.getColumnZone(4).addHint(8)
-grid.getColumnZone(5).addHint(7)
-grid.getColumnZone(6).addHint(7)
-grid.getColumnZone(7).addHint(2)
-grid.getColumnZone(7).addHint(2)
+# Load the grid from file
+grid = TextLoader.load("puzzles/super-easy-2.txt")
 
 # Prepare a console renderer
 renderer = ConsoleRenderer(grid)
@@ -36,6 +17,7 @@ solvers = []
 solvers.append(HintFitsInEstimatedZoneSolver())
 solvers.append(CrossAmbiguousZonesInCompletedHintsSolver())
 solvers.append(HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver())
+solvers.append(CrossMarksOutsideOfSolvedHintZonesSolver())
 
 # Print the initial grid
 print("---------------------------------------------")
@@ -77,20 +59,22 @@ def processSet(setType: str, setIndex: int, zone: Zone) -> bool:
                     print("---------------------------------------------")
                     renderer.render()
                     hasChanges = hadChanges = True
-                    input("Press a key to continue")
 
     return hadChanges
 
 # Run our solvers until no change at all between two full loops
 hasChanges = True
+hadChanges = False
 while hasChanges:
     hasChanges = False
 
     for rowIndex, rowSet in enumerate(grid.getRowZones()):
-        hasChanges = hasChanges or processSet("row", rowIndex, rowSet)
+        hadChanges = processSet("row", rowIndex, rowSet)
+        hasChanges = hasChanges or hadChanges
 
     for columnIndex, columnSet in enumerate(grid.getColumnZones()):
-        hasChanges = hasChanges or processSet("column", columnIndex, columnSet)
+        hadChanges = processSet("column", columnIndex, columnSet)
+        hasChanges = hasChanges or hadChanges
 
 
 print("---------------------------------------------")

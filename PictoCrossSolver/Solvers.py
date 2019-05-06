@@ -24,16 +24,18 @@ class HintFitsInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            regularExpression = PictoCrossSolver.Analyzers.RegexBuilder.getRegularExpressions(zone.getHints())[hintIndex]
-            serializedZone = PictoCrossSolver.Analyzers.ZoneSerializer.serialize(zone)
-            marks = zone.getMarks()[PictoCrossSolver.Analyzers.ZoneAnalyzer.analyze(serializedZone, regularExpression, hintIndex)]
+            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            marks = zone.getMarks()[markSlice]
 
             # If there are no zones, print no change
             if len(marks) == 0:
-                print(f"No valid zone for hint #{hintIndex}: {hint}")
+                #print(f"No valid zone for hint #{hintIndex}: {hint}")
                 continue
-            else:
-                print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+            #else:
+                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+
+            # Report found zones
+            
 
             # Calculate the length of the zone
             zoneLength = len(marks)
@@ -44,16 +46,16 @@ class HintFitsInEstimatedZoneSolver:
 
             # If the zone has too many values, we can't plot any portion of hint
             if minimumFilledMarks <= 0:
-                print("Not enough fillable marks to apply")
+                #print("Not enough fillable marks to apply")
                 continue
 
             # If the minimumFilledMarks items are already marked, don't alter
             marksAffected = marks[slice(minimumSafeMarks, minimumSafeMarks + minimumFilledMarks)]
             if len(marksAffected) == 0:
-                print("Not enough marks found")
+                #print("Not enough marks found")
                 continue
             if reduce(lambda x, y: x and y.isFilled(), marksAffected):
-                print("Marks already filled")
+                #print("Marks already filled")
                 continue
             
             # Fill all zones
@@ -86,7 +88,7 @@ class CrossAmbiguousZonesInCompletedHintsSolver:
 
         # If all marks are there and there are no ambiguous zone, quit
         if len(filledMarks) != totalHintsToFill or len(ambiguousMarks) == 0:
-            print("No ambiguous marks to cross or hint not complete yet")
+            #print("No ambiguous marks to cross or hint not complete yet")
             return False
 
         # Cross all ambiguous marks
@@ -114,16 +116,15 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            regularExpression = PictoCrossSolver.Analyzers.RegexBuilder.getRegularExpressions(zone.getHints())[hintIndex]
-            serializedZone = PictoCrossSolver.Analyzers.ZoneSerializer.serialize(zone)
-            marks = zone.getMarks()[PictoCrossSolver.Analyzers.ZoneAnalyzer.analyze(serializedZone, regularExpression, hintIndex)]
+            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            marks = zone.getMarks()[markSlice]
 
             # If there are no zones, print no change
             if len(marks) == 0:
-                print(f"No valid zone for hint #{hintIndex}: {hint}")
+                #print(f"No valid zone for hint #{hintIndex}: {hint}")
                 continue
-            else:
-                print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+            #else:
+                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
 
             # Find out if the there are filled marks in either edges
             if marks[0].isFilled():
@@ -133,7 +134,7 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
                 edgeIndex = len(marks) - hint
                 endIndex = len(marks)
             else:
-                print(f"No edge detected for hint #{hintIndex}: {hint} in {serializedZone}")
+                #print(f"No edge detected for hint #{hintIndex}: {hint} in {serializedZone}")
                 continue
 
             # Fill all marks from the edge to edge + hint
@@ -143,6 +144,78 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
                     hasChanges = True
                     mark.setFilled()
             
-            # If there are changes return
-            if hasChanges:
-                return True
+            return hasChanges
+
+class CrossMarksOutsideOfSolvedHintZonesSolver:
+    """
+    Crosses marks just outside of a zone that perfectly matched by a hint
+    There can be no ambiguity or filled marks beside another hint that is fully compliant
+    """
+
+    @staticmethod
+    def solve(zone: Zone) -> bool:
+        """
+        Applies the logic and returns true if something was altered
+
+        @param Zone zone to apply logic to
+
+        @return bool
+        """
+
+        for hintIndex, hint in enumerate(zone.getHints()):
+
+            # First get the zones affected by the matcher
+            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            marks = zone.getMarks()[markSlice]
+
+            # If there are no zones, print no change
+            if len(marks) == 0:
+                #print(f"No valid zone for hint #{hintIndex}: {hint}")
+                continue
+            #else:
+                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+
+            # Extract the filled marks
+            filledMarks = list(mark for mark in marks if mark.isFilled())
+
+            # Find out if the hint is fulfilled
+            if len(filledMarks) != hint:
+                #print(f"Hint is not fulfilled yet for #{hintIndex}: {hint} in {serializedZone}")
+                continue
+
+            # Find the marks just around this hint and cross them
+            previousMark = None
+            firstMark = filledMarks[0]
+            lastMark = filledMarks[len(filledMarks) - 1]
+            nextMark = None
+            lastIteratedMark = None
+            saveNextMark = False
+            for mark in zone.getMarks():
+                
+                # If we have saveNextMark turned on, save the current mark as the nextMark
+                if saveNextMark == True:
+                    nextMark = mark
+                    break
+
+                # If we found the first or last mark of the zone that matches the hint
+                if firstMark is mark:
+                    # Save the last iterated mark as the previousMark
+                    previousMark = lastIteratedMark
+
+                elif lastMark is mark:
+                    # Flag that we must keep the next mark as nextMark
+                    saveNextMark = True
+
+                # Keep track of the last mark iterated on in case the next is firstMark
+                lastIteratedMark = mark
+            
+            # Cross the found marks
+            hasChanges = False
+            if previousMark != None and previousMark.isAmbiguous():
+                hasChanges = True
+                previousMark.setCrossed()
+            if nextMark != None and nextMark.isAmbiguous():
+                hasChanges = True
+                nextMark.setCrossed()
+            
+            return hasChanges
