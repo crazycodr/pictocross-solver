@@ -1,15 +1,13 @@
 import sys
+import logging
 
 from PictoCrossSolver.PictoCross import Grid
 
-#######################################################################################
-#
-# The renderers attach to a grid and allows a grid to be printed. Only a
-# ConsoleRenderer exists for now.
-#
-#######################################################################################
-
 class ConsoleRenderer:
+    """
+    The renderers attach to a grid and allows a grid to be printed. Only a 
+    ConsoleRenderer exists for now.
+    """
 
     def __init__(self, grid: Grid):
 
@@ -58,21 +56,21 @@ class ConsoleRenderer:
 
         # Render each _yHint
         for hintRow in self._columnHints:
-            print(hintRow)
+            logging.getLogger(None).info(hintRow)
         
         # Print the separator
-        print(max(len(hint) for hint in self._columnHints) * "-")
+        logging.getLogger(None).info(max(len(hint) for hint in self._columnHints) * "-")
         
         # Render each _xHint and corresponding zone
         for index, hintRow in enumerate(self._rowHints):
-            sys.stdout.write(hintRow)
+            render = hintRow
             zone = self._grid.getRowZone(index)
             for mark in zone.getMarks():
                 if mark.isFilled():
-                    sys.stdout.write(" " + u'\u2588' + " ")
+                    render += " " + u'\u2588' + " "
                 elif mark.isCrossed():
-                    sys.stdout.write(" X ")
+                    render += " X "
                 else:
-                    sys.stdout.write(" ? ")
-            print("")
-            print(self._pipeOnlySpacer)
+                    render += " ? "
+            logging.getLogger(None).info(render)
+            logging.getLogger(None).info(self._pipeOnlySpacer)

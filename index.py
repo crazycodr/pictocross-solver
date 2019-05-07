@@ -1,10 +1,21 @@
 import itertools
 import logging
+import os
 
 from PictoCrossSolver.PictoCross import Grid
 from PictoCrossSolver.Renderers import ConsoleRenderer
 from PictoCrossSolver.Solvers import *
 from PictoCrossSolver.Loaders import TextLoader
+
+# Setup logging
+logger = logging.getLogger(None)
+consoleLoggingHandler = logging.StreamHandler()
+consoleLoggingHandler.setLevel(logging.DEBUG)
+fileLoggingHandler = logging.FileHandler(filename = os.getcwd() + '/run.log')
+fileLoggingHandler.setLevel(logging.DEBUG)
+logger.addHandler(consoleLoggingHandler)
+logger.addHandler(fileLoggingHandler)
+logger.setLevel(logging.DEBUG)
 
 # Load the grid from file
 grid = TextLoader.load("puzzles/biggest-picture-cross/animals/puzzle-4-3.txt")
@@ -19,26 +30,24 @@ solvers.append(CrossAmbiguousZonesInCompletedHintsSolver())
 solvers.append(HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver())
 solvers.append(CrossMarksOutsideOfSolvedHintZonesSolver())
 
-# Print the initial grid
-print("---------------------------------------------")
-print("INITIAL GRID")
-print("---------------------------------------------")
+# Show the initial puzzle empty
+logger.info("---------------------------------------------")
+logger.info("INITIAL GRID")
+logger.info("---------------------------------------------")
 renderer.render()
-print("---------------------------------------------")
-
-logging.basicConfig(level = logging.DEBUG)
+logger.info("---------------------------------------------")
 
 def processSet(setType: str, setIndex: int, zone: Zone) -> bool:
 
     # Serialize the zone and report it
-    print()
-    print(f"Processing {setType} #{setIndex}")
-    print("---------------------------------------------")
+    logger.info("")
+    logger.info(f"Processing {setType} #{setIndex}")
+    logger.info("---------------------------------------------")
 
 
     # If there are no ambiguous marks left, consider complete and skip
     if len(list((zone for zone in zone.getMarks() if zone.isAmbiguous()))) == 0:
-        print(f"Already completed")
+        logger.info(f"Already completed")
         return False
 
     # As long as we have changes, apply the solvers again
@@ -53,10 +62,10 @@ def processSet(setType: str, setIndex: int, zone: Zone) -> bool:
             
             # Apply the solvers
             for solver in solvers:
-                print(f"Applying solver {type(solver).__name__}")
+                logger.info(f"Applying solver {type(solver).__name__}")
                 if solver.solve(zone):
-                    print(f"Solver made changes:")
-                    print("---------------------------------------------")
+                    logger.info(f"Solver made changes:")
+                    logger.info("---------------------------------------------")
                     renderer.render()
                     hasChanges = hadChanges = True
 
@@ -77,5 +86,8 @@ while hasChanges:
         hasChanges = hasChanges or hadChanges
 
 
-print("---------------------------------------------")
+logger.info("---------------------------------------------")
 renderer.render()
+fileLoggingHandler.close()
+consoleLoggingHandler.flush()
+consoleLoggingHandler.close()

@@ -134,7 +134,6 @@ def test_analyze_scenario12():
     obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
 
     expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([1], 0)
-    print(expression)
     
     assert obj.analyze("aaabaa", expression, 0) == slice(0, 3, None)
 
@@ -175,7 +174,6 @@ def test_analyze_scenario15():
     obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
 
     expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2, 2], 0)
-    print(expression)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(3, 6, None)
 

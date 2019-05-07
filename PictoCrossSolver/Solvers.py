@@ -1,4 +1,4 @@
-import math
+import logging
 from functools import reduce
 from typing import List
 
@@ -31,13 +31,10 @@ class HintFitsInEstimatedZoneSolver:
 
             # If there are no zones, print no change
             if len(marks) == 0:
-                #print(f"No valid zone for hint #{hintIndex}: {hint}")
+                logging.getLogger(None).debug(f"No valid zone for hint #{hintIndex}: {hint}")
                 continue
-            #else:
-                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
-
-            # Report found zones
-            
+            else:
+                logging.getLogger(None).debug(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint}")
 
             # Calculate the length of the zone
             zoneLength = len(marks)
@@ -48,16 +45,16 @@ class HintFitsInEstimatedZoneSolver:
 
             # If the zone has too many values, we can't plot any portion of hint
             if minimumFilledMarks <= 0:
-                #print("Not enough fillable marks to apply")
+                logging.getLogger(None).debug("Not enough fillable marks to apply")
                 continue
 
             # If the minimumFilledMarks items are already marked, don't alter
             marksAffected = marks[slice(minimumSafeMarks, minimumSafeMarks + minimumFilledMarks)]
             if len(marksAffected) == 0:
-                #print("Not enough marks found")
+                logging.getLogger(None).debug("Not enough marks found")
                 continue
             if reduce(lambda x, y: x and y, (mark.isFilled() for mark in marksAffected), True):
-                #print("Marks already filled")
+                logging.getLogger(None).debug("Marks already filled")
                 continue
             
             # Fill all zones
@@ -90,7 +87,7 @@ class CrossAmbiguousZonesInCompletedHintsSolver:
 
         # If all marks are there and there are no ambiguous zone, quit
         if len(filledMarks) != totalHintsToFill or len(ambiguousMarks) == 0:
-            #print("No ambiguous marks to cross or hint not complete yet")
+            logging.getLogger(None).debug("No ambiguous marks to cross or hint not complete yet")
             return False
 
         # Cross all ambiguous marks
@@ -125,10 +122,10 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
 
             # If there are no zones, print no change
             if len(marks) == 0:
-                #print(f"No valid zone for hint #{hintIndex}: {hint}")
+                logging.getLogger(None).debug(f"No valid zone for hint #{hintIndex}: {hint}")
                 continue
-            #else:
-                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+            else:
+                logging.getLogger(None).debug(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint}")
 
             # Find out if the there are filled marks in either edges
             if marks[0].isFilled():
@@ -138,7 +135,7 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
                 edgeIndex = len(marks) - hint
                 endIndex = len(marks)
             else:
-                #print(f"No edge detected for hint #{hintIndex}: {hint} in {serializedZone}")
+                logging.getLogger(None).debug(f"No edge detected for hint #{hintIndex}: {hint}")
                 continue
 
             # Fill all marks from the edge to edge + hint
@@ -176,17 +173,17 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
 
             # If there are no zones, print no change
             if len(marks) == 0:
-                #print(f"No valid zone for hint #{hintIndex}: {hint}")
+                logging.getLogger(None).debug(f"No valid zone for hint #{hintIndex}: {hint}")
                 continue
-            #else:
-                #print(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint} in {serializedZone}")
+            else:
+                logging.getLogger(None).debug(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint}")
 
             # Extract the filled marks
             filledMarks = list(mark for mark in marks if mark.isFilled())
 
             # Find out if the hint is fulfilled
             if len(filledMarks) != hint:
-                #print(f"Hint is not fulfilled yet for #{hintIndex}: {hint} in {serializedZone}")
+                logging.getLogger(None).debug(f"Hint is not fulfilled yet for #{hintIndex}: {hint}")
                 continue
 
             # Find the marks just around this hint and cross them
