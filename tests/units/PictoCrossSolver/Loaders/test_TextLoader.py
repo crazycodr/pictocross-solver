@@ -1,4 +1,4 @@
-from PictoCrossSolver.Loaders import TextLoader
+from PictoCrossSolver.Readers import TextReader
 import os
 
 def test_load_scenario1():
@@ -6,7 +6,7 @@ def test_load_scenario1():
     Tests that scenario1 is loaded properly, 8x8 square, multiple hints
     """
 
-    obj = TextLoader()
+    obj = TextReader()
     grid = obj.load(os.path.dirname(os.path.abspath(__file__)) + "/scenario1.txt")
 
     assert len(grid.getRowZones()) == 8
@@ -36,7 +36,7 @@ def test_load_scenario2():
     Scenario built from scratch, not necessarily solvable
     """
 
-    obj = TextLoader()
+    obj = TextReader()
     grid = obj.load(os.path.dirname(os.path.abspath(__file__)) + "/scenario2.txt")
 
     assert len(grid.getRowZones()) == 4

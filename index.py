@@ -5,7 +5,8 @@ import os
 from PictoCrossSolver.Elements import Grid
 from PictoCrossSolver.Renderers import ConsoleRenderer
 from PictoCrossSolver.Solvers import *
-from PictoCrossSolver.Loaders import TextLoader
+from PictoCrossSolver.Readers import TextReader
+from PictoCrossSolver.Writers import SolutionWriter
 
 # Setup logging
 logger = logging.getLogger(None)
@@ -18,7 +19,7 @@ logger.addHandler(fileLoggingHandler)
 logger.setLevel(logging.DEBUG)
 
 # Load the grid from file
-grid = TextLoader.load("puzzles/biggest-picture-cross/animals/puzzle-3-1.txt")
+grid = TextReader.load("puzzles/biggest-picture-cross/animals/puzzle-4-3.txt")
 
 # Prepare a console renderer
 renderer = ConsoleRenderer(grid)
@@ -91,3 +92,6 @@ renderer.render()
 fileLoggingHandler.close()
 consoleLoggingHandler.flush()
 consoleLoggingHandler.close()
+
+# Print the solution to solution.txt
+SolutionWriter.write(os.getcwd() + '/solution.txt', grid)

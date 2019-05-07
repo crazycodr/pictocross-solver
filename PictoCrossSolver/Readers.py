@@ -1,6 +1,6 @@
 from PictoCrossSolver.Elements import Grid
 
-class TextLoader:
+class TextReader:
     """
     Used to load puzzles from text files containing 2 lines
     - First line contains the column definitions

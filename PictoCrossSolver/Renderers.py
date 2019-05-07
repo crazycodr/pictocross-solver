@@ -1,5 +1,6 @@
 import sys
 import logging
+from typing import List
 
 from PictoCrossSolver.Elements import Grid
 
@@ -77,3 +78,37 @@ class ConsoleRenderer:
                     render += " ? "
             logging.getLogger(None).info(render)
             logging.getLogger(None).info(self._pipeOnlySpacer)
+
+class SolutionRenderer:
+    """
+    This renderer transforms a Grid into a list of strings with each
+    mark represented by a single character
+    """
+
+    def __init__(self, grid: Grid):
+
+        # Save the grid for later use
+        self._grid = grid
+
+    
+    def render(self) -> List[str]:
+        """
+        Renders the currently attached grid to the logger
+
+        @param TextIOWrapper file to output the grid solution to
+        """
+
+        # Render each row mark by mark
+        results = []
+        for rowZone in self._grid.getRowZones():
+            rowStr = ""
+            for mark in rowZone.getMarks():
+                if mark.isFilled():
+                    rowStr += u'\u2588'
+                elif mark.isCrossed():
+                    rowStr += "X"
+                else:
+                    rowStr += "?"
+            results.append(rowStr)
+        
+        return results
