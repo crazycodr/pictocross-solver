@@ -56,7 +56,7 @@ def test_analyze_scenario3():
     In this scenario the pattern is complex an features barred zones
     that would normally result in incorrect slice lookup if using only forward lookups.
     This comes from a real world scenario 
-    The pattern is "aaaaaaaaabmm"
+    The pattern is "aaaaaaaaacff"
     There are 2 hints of 4 and 2
     For hint 0:
         Forward direction should yield the marks 0-9
@@ -93,7 +93,7 @@ def test_analyze_scenario4():
     Regression test for following scenario:
     
     hints: [7]
-    pattern: baaaammmbbaa
+    pattern: caaaafffccaa
     expected: 1-8
 
     Currently getting error due to None being returned
@@ -122,7 +122,7 @@ def test_analyze_scenario5():
     Regression test for following scenario:
     
     hints: [4]
-    pattern: baaaabbbaaaa
+    pattern: caaaacccaaaa
     expected: None
 
     Currently getting error due to None being returned

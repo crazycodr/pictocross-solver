@@ -25,7 +25,7 @@ def test_analyze_scenario2():
 
     expression = RegexBuilder.getForwardRegularExpression([1], 0)
     
-    assert obj.analyze("aabaaa", expression, 0) == slice(0, 2, None)
+    assert obj.analyze("aacaaa", expression, 0) == slice(0, 2, None)
 
 
 def test_analyze_scenario3():
@@ -39,21 +39,21 @@ def test_analyze_scenario3():
 
     expression = RegexBuilder.getForwardRegularExpression([2], 0)
     
-    assert obj.analyze("abbaaa", expression, 0) == slice(3, 6, None)
+    assert obj.analyze("accaaa", expression, 0) == slice(3, 6, None)
 
 
 def test_analyze_scenario4():
     """
     Tests that analyzer returns proper result
     In this test, hint 0 is greedy
-    Pattern should return a possible result of "mma" for hint 0 from the end
+    Pattern should return a possible result of "ffa" for hint 0 from the end
     """
 
     obj = RegexZoneAnalyzer()
 
     expression = RegexBuilder.getForwardRegularExpression([2], 0)
     
-    assert obj.analyze("abbmma", expression, 0) == slice(3, 6, None)
+    assert obj.analyze("accffa", expression, 0) == slice(3, 6, None)
 
 
 def test_analyze_scenario5():
@@ -135,7 +135,7 @@ def test_analyze_scenario12():
 
     expression = RegexBuilder.getBackwardRegularExpression([1], 0)
     
-    assert obj.analyze("aaabaa", expression, 0) == slice(0, 3, None)
+    assert obj.analyze("aaacaa", expression, 0) == slice(0, 3, None)
 
 
 def test_analyze_scenario13():
@@ -148,20 +148,20 @@ def test_analyze_scenario13():
 
     expression = RegexBuilder.getBackwardRegularExpression([2], 0)
     
-    assert obj.analyze("aaabba", expression, 0) == slice(0, 3, None)
+    assert obj.analyze("aaacca", expression, 0) == slice(0, 3, None)
 
 
 def test_analyze_scenario14():
     """
     Tests that analyzer returns proper result
-    In this test, hint 0 is greedy and pattern shows a possible result of "amm"
+    In this test, hint 0 is greedy and pattern shows a possible result of "aff"
     """
 
     obj = RegexZoneAnalyzer()
 
     expression = RegexBuilder.getBackwardRegularExpression([2], 0)
     
-    assert obj.analyze("ammbba", expression, 0) == slice(0, 3, None)
+    assert obj.analyze("affcca", expression, 0) == slice(0, 3, None)
 
 
 def test_analyze_scenario15():

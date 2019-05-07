@@ -46,11 +46,11 @@ class RegexBuilder:
                 lazy = "?"
 
             # Add to the regex
-            parts.append(f"(?P<hint{hintIndex}>(a|m){{{hint},}}{lazy})")
+            parts.append(f"(?P<hint{hintIndex}>(a|f){{{hint},}}{lazy})")
             
             # If there are more items after this one, add a separator matcher
             if len(hints) > (hintIndex + 1):
-                parts.append(f"(?P<sep{hintIndex}>(a|b){{1,}}?)")
+                parts.append(f"(?P<sep{hintIndex}>(a|c){{1,}}?)")
 
         return parts
 
@@ -64,13 +64,13 @@ class RegexBuilder:
         parts = []
 
         # Add the lazy prefix
-        parts.append(f"(?P<prefix>(a|b)*?)")
+        parts.append(f"(?P<prefix>(a|c)*?)")
 
         # Add all parts next
         parts = parts + RegexBuilder.getRegularExpressionParts(hints, greedyHintIndex)
 
         # Add the greedy suffix
-        parts.append(f"(?P<suffix>(a|b)*)")
+        parts.append(f"(?P<suffix>(a|c)*)")
 
         # Return reversed and joined
         return "".join(parts)
@@ -86,13 +86,13 @@ class RegexBuilder:
         parts = []
 
         # Add the greedy prefix
-        parts.append(f"(?P<prefix>(a|b)*)")
+        parts.append(f"(?P<prefix>(a|c)*)")
 
         # Add all parts next
         parts = parts + RegexBuilder.getRegularExpressionParts(hints, greedyHintIndex)
 
         # Add the lazy suffix
-        parts.append(f"(?P<suffix>(a|b)*?)")
+        parts.append(f"(?P<suffix>(a|c)*?)")
 
         # Return reversed and joined
         return "".join(parts[::-1])
@@ -114,9 +114,9 @@ class ZoneSerializer:
         results = []
         for mark in zone.getMarks():
             if mark.isFilled():
-                results.append("m")
+                results.append("f")
             elif mark.isCrossed():
-                results.append("b")
+                results.append("c")
             else:
                 results.append("a")
         
@@ -171,13 +171,13 @@ class HintCrossoverRegexAnalyzer:
 
     A good example of this is:
 
-    (3,2,2) => aaaaaaaaabmm
+    (3,2,2) => aaaaaaaaacff
 
     If you try to match on this, it says that hint #3 (the second 2), can be set into the last two "aa" 
     before the "bmm", but in fact, the hint #3 is already filled on the "bmm" portion. By running a reverse
     check on
 
-    (2,2,3) => mmbaaaaaaaaa
+    (2,2,3) => ffcaaaaaaaaa
 
     You get a match that is totally different and now "mm" matches hint #3 that comes first. This tells us that
     we cannot properly trust the initial forward check. In the current case, the slice retrieve will be non 

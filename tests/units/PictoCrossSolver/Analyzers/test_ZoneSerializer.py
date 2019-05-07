@@ -34,7 +34,7 @@ def test_serialize_scenario2():
     zone.addMark(filledMark())
     zone.addMark(filledMark())
     
-    assert obj.serialize(zone) == 'mmmmmm'
+    assert obj.serialize(zone) == 'ffffff'
 
 
 def test_serialize_scenario3():
@@ -52,7 +52,7 @@ def test_serialize_scenario3():
     zone.addMark(crossedMark())
     zone.addMark(crossedMark())
     
-    assert obj.serialize(zone) == 'bbbbbb'
+    assert obj.serialize(zone) == 'cccccc'
 
 
 def test_serialize_scenario4():
@@ -70,7 +70,7 @@ def test_serialize_scenario4():
     zone.addMark(crossedMark())
     zone.addMark(ambiguousMark())
     
-    assert obj.serialize(zone) == 'bmmaba'
+    assert obj.serialize(zone) == 'cffaca'
 
 
 def crossedMark():

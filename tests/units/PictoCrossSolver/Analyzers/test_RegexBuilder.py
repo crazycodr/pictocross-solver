@@ -36,9 +36,9 @@ def test_getRegularExpressionParts_scenario3():
     
     parts = obj.getRegularExpressionParts([2, 4], 0)
 
-    assert parts[0] == '(?P<hint0>(a|m){2,})'
-    assert parts[1] == '(?P<sep0>(a|b){1,}?)'
-    assert parts[2] == '(?P<hint1>(a|m){4,}?)'
+    assert parts[0] == '(?P<hint0>(a|f){2,})'
+    assert parts[1] == '(?P<sep0>(a|c){1,}?)'
+    assert parts[2] == '(?P<hint1>(a|f){4,}?)'
 
 
 def test_getRegularExpressionParts_scenario4():
@@ -53,9 +53,9 @@ def test_getRegularExpressionParts_scenario4():
     
     parts = obj.getRegularExpressionParts([2, 4], 1)
 
-    assert parts[0] == '(?P<hint0>(a|m){2,}?)'
-    assert parts[1] == '(?P<sep0>(a|b){1,}?)'
-    assert parts[2] == '(?P<hint1>(a|m){4,})'
+    assert parts[0] == '(?P<hint0>(a|f){2,}?)'
+    assert parts[1] == '(?P<sep0>(a|c){1,}?)'
+    assert parts[2] == '(?P<hint1>(a|f){4,})'
 
 
 def test_getForwardRegularExpression_scenario1():
@@ -69,11 +69,11 @@ def test_getForwardRegularExpression_scenario1():
     expression = obj.getForwardRegularExpression([2, 4], 0)
 
     expectedParts = [
-        '(?P<prefix>(a|b)*?)',
-        '(?P<hint0>(a|m){2,})',
-        '(?P<sep0>(a|b){1,}?)',
-        '(?P<hint1>(a|m){4,}?)',
-        '(?P<suffix>(a|b)*)'
+        '(?P<prefix>(a|c)*?)',
+        '(?P<hint0>(a|f){2,})',
+        '(?P<sep0>(a|c){1,}?)',
+        '(?P<hint1>(a|f){4,}?)',
+        '(?P<suffix>(a|c)*)'
     ]
 
     assert expression == "".join(expectedParts)
@@ -91,11 +91,11 @@ def test_getBackwardRegularExpression_scenario1():
     expression = obj.getBackwardRegularExpression([2, 4], 0)
 
     expectedParts = [
-        '(?P<suffix>(a|b)*?)',
-        '(?P<hint1>(a|m){4,}?)',
-        '(?P<sep0>(a|b){1,}?)',
-        '(?P<hint0>(a|m){2,})',
-        '(?P<prefix>(a|b)*)'
+        '(?P<suffix>(a|c)*?)',
+        '(?P<hint1>(a|f){4,}?)',
+        '(?P<sep0>(a|c){1,}?)',
+        '(?P<hint0>(a|f){2,})',
+        '(?P<prefix>(a|c)*)'
     ]
 
     assert expression == "".join(expectedParts)
