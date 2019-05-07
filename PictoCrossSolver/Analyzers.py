@@ -144,7 +144,7 @@ class RegexZoneAnalyzer:
 
         # Run the regular expression to get matches for named groups
         try:
-            matches = re.match(matcher, pattern).groupdict()
+            matches = re.fullmatch(matcher, pattern).groupdict()
         except (NameError, AttributeError):
             return slice(0)
 
@@ -215,6 +215,8 @@ class HintCrossoverRegexAnalyzer:
         forwardSlice = RegexZoneAnalyzer.analyze(forwardPattern, forwardExpression, hintIndex)
         backwardSlice = RegexZoneAnalyzer.analyze(backwardPattern, backwardExpression, hintIndex)
 
+        # If the backward slice is wrong, we should just exit, there can't be any match
+
         # Reverse the backward slice
         backwardSlice = slice(
             len(zone.getMarks()) - backwardSlice.stop,
@@ -234,10 +236,11 @@ class HintCrossoverRegexAnalyzer:
                 max(value for value in intersection) + 1
             )
         
-        # There are no intersections, check if there is a slice that has only filled marks
+        # There are no intersections, check if there is a slice that has only filled marks matching the hint size
+        # If there are enough marks it is safe to assume that this is the right block
         forwardSliceFilledMarks = len(list(mark for mark in zone.getMarks()[forwardSlice] if mark.isFilled()))
         backwardSliceFilledMarks = len(list(mark for mark in zone.getMarks()[backwardSlice] if mark.isFilled()))
-        if forwardSliceFilledMarks == 0 and backwardSliceFilledMarks != 0:
+        if forwardSliceFilledMarks == 0 and backwardSliceFilledMarks == zone.getHints()[hintIndex]:
             return backwardSlice
-        elif backwardSliceFilledMarks == 0 and forwardSliceFilledMarks != 0:
+        elif backwardSliceFilledMarks == 0 and forwardSliceFilledMarks == zone.getHints()[hintIndex]:
             return forwardSlice

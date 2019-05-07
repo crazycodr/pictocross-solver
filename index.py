@@ -10,15 +10,15 @@ from PictoCrossSolver.Loaders import TextLoader
 # Setup logging
 logger = logging.getLogger(None)
 consoleLoggingHandler = logging.StreamHandler()
-consoleLoggingHandler.setLevel(logging.DEBUG)
-fileLoggingHandler = logging.FileHandler(filename = os.getcwd() + '/run.log')
+consoleLoggingHandler.setLevel(logging.INFO)
+fileLoggingHandler = logging.FileHandler(filename = os.getcwd() + '/run.log', mode = 'w')
 fileLoggingHandler.setLevel(logging.DEBUG)
 logger.addHandler(consoleLoggingHandler)
 logger.addHandler(fileLoggingHandler)
 logger.setLevel(logging.DEBUG)
 
 # Load the grid from file
-grid = TextLoader.load("puzzles/biggest-picture-cross/animals/puzzle-4-3.txt")
+grid = TextLoader.load("puzzles/biggest-picture-cross/animals/puzzle-3-1.txt")
 
 # Prepare a console renderer
 renderer = ConsoleRenderer(grid)

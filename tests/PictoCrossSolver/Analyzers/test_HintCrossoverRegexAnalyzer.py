@@ -145,6 +145,73 @@ def test_analyze_scenario5():
     
     assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == None
 
+def test_analyze_scenario6():
+    """
+    Tests a scenario that currently returns wrong zones for a hint.
+
+    Row 1 currently changes hint #2 and adds a mark at column 4 which is
+    wrong because hint #2 could very well be on the other side of the puzzle.
+
+    The problem here is that it is assumed that row 1 setup forces hint #1 to
+    resolve to the 2 first ambiguous squares and hint #2 to the squares 3-5.
+    ---------------------------------------------
+                     3              1  1     2          
+                  6  2  1  1  1  1  1  1  1  2  6       
+            6  11 6  6  7  7  7  8  8  8  8  6  6  11 6 
+    ----------------------------------------------------
+        9 | ?  ?  ?  ?  ?  ?  █  █  █  ?  ?  ?  ?  ?  ? 
+          |
+      2 2 | ?  ?  ?  █  ?  ?  X  X  X  ?  ?  ?  ?  ?  ? 
+          |
+    2 2 1 | ?  ?  █  █  ?  ?  X  ?  ?  ?  ?  ?  █  ?  ? 
+          |
+      2 2 | ?  ?  █  ?  ?  ?  X  ?  ?  ?  ?  ?  █  ?  ? 
+          |
+    2 4 2 | ?  █  █  X  ?  X  X  ?  ?  ?  ?  X  █  █  ? 
+          |
+       13 | ?  █  █  █  █  █  █  █  █  █  █  █  █  █  ? 
+          |
+       15 | █  █  █  █  █  █  █  █  █  █  █  █  █  █  █ 
+          |
+    2 7 2 | ?  █  ?  X  ?  █  █  █  █  █  █  X  ?  █  ? 
+          |
+    2 9 2 | █  █  X  █  █  █  █  █  █  █  █  █  X  █  █ 
+          |
+       15 | █  █  █  █  █  █  █  █  █  █  █  █  █  █  █ 
+          |
+       15 | █  █  █  █  █  █  █  █  █  █  █  █  █  █  █ 
+          |
+       15 | █  █  █  █  █  █  █  █  █  █  █  █  █  █  █ 
+          |
+      3 3 | ?  ?  █  █  ?  X  X  ?  ?  ?  ?  █  █  ?  ? 
+          |
+      3 3 | ?  ?  █  █  ?  ?  X  ?  ?  ?  ?  █  █  ?  ? 
+          |
+      1 1 | ?  ?  █  X  ?  ?  X  ?  ?  ?  ?  X  █  ?  ? 
+          |
+    """
+
+    zone = Zone()
+    zone.addHint(2)
+    zone.addHint(2)
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    
+    assert HintCrossoverRegexAnalyzer.analyze(zone, 1) == None
+    
 
 def crossedMark():
     mark = Mark()

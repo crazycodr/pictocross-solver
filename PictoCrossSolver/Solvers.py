@@ -128,14 +128,23 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
                 logging.getLogger(None).debug(f"Found {len(marks)} zones that could be affected by hint #{hintIndex}: {hint}")
 
             # Find out if the there are filled marks in either edges
+            edgeMark = None
             if marks[0].isFilled():
                 edgeIndex = 0
                 endIndex = hint
+                if markSlice.start > 0:
+                    edgeMark = zone.getMarks()[slice(markSlice.start - 1, markSlice.start)][0]
             elif marks[len(marks) - 1].isFilled():
                 edgeIndex = len(marks) - hint
                 endIndex = len(marks)
+                if markSlice.stop < len(zone.getMarks()):
+                    edgeMark = zone.getMarks()[slice(markSlice.stop, markSlice.stop + 1)][0]
             else:
                 logging.getLogger(None).debug(f"No edge detected for hint #{hintIndex}: {hint}")
+                continue
+            
+            # Ensure mark right after or before is crossed, prevent test_analyze_scenario4
+            if edgeMark == None or not edgeMark.isCrossed():
                 continue
 
             # Fill all marks from the edge to edge + hint
@@ -200,12 +209,13 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
                     nextMark = mark
                     break
 
-                # If we found the first or last mark of the zone that matches the hint
+                # If we found the first mark of the zone that matches the hint
                 if firstMark is mark:
                     # Save the last iterated mark as the previousMark
                     previousMark = lastIteratedMark
 
-                elif lastMark is mark:
+                # If we found the last mark of the zone that matches the hint
+                if lastMark is mark:
                     # Flag that we must keep the next mark as nextMark
                     saveNextMark = True
 
@@ -220,5 +230,7 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
             if nextMark != None and nextMark.isAmbiguous():
                 hasChanges = True
                 nextMark.setCrossed()
-            
-            return hasChanges
+
+            # Only return if there are changes, else continue with next hint
+            if hasChanges:            
+                return hasChanges
