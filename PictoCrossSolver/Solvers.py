@@ -25,6 +25,8 @@ class HintFitsInEstimatedZoneSolver:
 
             # First get the zones affected by the matcher
             markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            if markSlice == None:
+                return False
             marks = zone.getMarks()[markSlice]
 
             # If there are no zones, print no change
@@ -54,7 +56,7 @@ class HintFitsInEstimatedZoneSolver:
             if len(marksAffected) == 0:
                 #print("Not enough marks found")
                 continue
-            if reduce(lambda x, y: x and y.isFilled(), marksAffected):
+            if reduce(lambda x, y: x and y, (mark.isFilled() for mark in marksAffected), True):
                 #print("Marks already filled")
                 continue
             
@@ -117,6 +119,8 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
 
             # First get the zones affected by the matcher
             markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            if markSlice == None:
+                return False
             marks = zone.getMarks()[markSlice]
 
             # If there are no zones, print no change
@@ -166,6 +170,8 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
 
             # First get the zones affected by the matcher
             markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            if markSlice == None:
+                return False
             marks = zone.getMarks()[markSlice]
 
             # If there are no zones, print no change

@@ -7,7 +7,7 @@ from PictoCrossSolver.Solvers import *
 from PictoCrossSolver.Loaders import TextLoader
 
 # Load the grid from file
-grid = TextLoader.load("puzzles/super-easy-2.txt")
+grid = TextLoader.load("puzzles/biggest-picture-cross/animals/puzzle-4-3.txt")
 
 # Prepare a console renderer
 renderer = ConsoleRenderer(grid)

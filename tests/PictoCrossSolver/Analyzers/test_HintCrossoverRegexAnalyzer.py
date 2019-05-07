@@ -87,6 +87,64 @@ def test_analyze_scenario3():
     assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(0, 9, None)
     assert HintCrossoverRegexAnalyzer.analyze(zone, 1) == slice(10, 12, None)
 
+def test_analyze_scenario4():
+    """
+    Tests that the analysis yields the proper result
+    Regression test for following scenario:
+    
+    hints: [7]
+    pattern: baaaammmbbaa
+    expected: 1-8
+
+    Currently getting error due to None being returned
+    """
+
+    zone = Zone()
+    zone.addHint(7)
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(filledMark())
+    zone.addMark(filledMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    
+    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(1, 8, None)
+
+def test_analyze_scenario5():
+    """
+    Tests that the analysis yields the proper result
+    Regression test for following scenario:
+    
+    hints: [4]
+    pattern: baaaabbbaaaa
+    expected: None
+
+    Currently getting error due to None being returned
+    """
+
+    zone = Zone()
+    zone.addHint(4)
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    
+    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == None
+
 
 def crossedMark():
     mark = Mark()
