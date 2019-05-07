@@ -244,3 +244,57 @@ class HintCrossoverRegexAnalyzer:
             return backwardSlice
         elif backwardSliceFilledMarks == 0 and forwardSliceFilledMarks == zone.getHints()[hintIndex]:
             return forwardSlice
+
+class HintSharesFilledMarksWithAnotherHint:
+    """
+    This is an added layer over the HintCrossoverRegexAnalyzer that runs all hints to gather their slices and
+    then takes the suggested hintIndex to find shared marks with other hints.
+
+    This analyzer is used to prevent scenarios like the following:
+
+    (3,1,1) => aaaaafafaaaa
+
+    If you try to match on this, it says that hint #3 (the second 1), can be set into the last 5 "faaaa" but in fact
+    this is incorrect as the 2nd "f" could be part of the hint #1: 3.
+    """
+
+    @staticmethod
+    def analyze(zone: Zone, hintIndex: int) -> slice:
+        """
+        Runs the analysis on the pattern that comes from a Zone and was serialized
+        and uses the matcher against it and returns a slice representing the hit zone.
+
+        @param str pattern to match against
+        @param str matcher is the regex to apply
+        @param int hint is the index of the hint to extract
+
+        @return slice
+        """
+
+        # Gather all slices for hints
+        hintSlices = {}
+        for innerHintIndex, hint in enumerate(zone.getHints()):
+            hintSlices[innerHintIndex] = HintCrossoverRegexAnalyzer.analyze(zone, innerHintIndex)
+
+        # Compare the master slice with all other slices to find potential intersections of filled slices
+        masterSlice = hintSlices[hintIndex]
+        masterSet = set(range(masterSlice.start, masterSlice.stop))
+        for otherSliceIndex in hintSlices.keys():
+            if otherSliceIndex == hintIndex:
+                continue
+            otherSlice = hintSlices[otherSliceIndex]
+            if otherSlice == None:
+                continue
+            otherSet = set(range(otherSlice.start, otherSlice.stop))
+            intersection = otherSet.intersection(masterSet)
+            if len(intersection) == 0:
+                continue
+            intersectionSlice = slice(
+                min(value for value in intersection),
+                max(value for value in intersection) + 1
+            )
+            filledMarksInRange = len(list(mark for mark in zone.getMarks()[intersectionSlice] if mark.isFilled()))
+            masterHint = zone.getHints()[hintIndex]
+            otherHint = zone.getHints()[otherSliceIndex]
+            if filledMarksInRange and masterHint != otherHint:
+                return True

@@ -75,7 +75,7 @@ class ConsoleRenderer:
                 elif mark.isCrossed():
                     render += " X "
                 else:
-                    render += " ? "
+                    render += "   "
             logging.getLogger(None).info(render)
             logging.getLogger(None).info(self._pipeOnlySpacer)
 
@@ -108,7 +108,7 @@ class SolutionRenderer:
                 elif mark.isCrossed():
                     rowStr += "X"
                 else:
-                    rowStr += "?"
+                    rowStr += " "
             results.append(rowStr)
         
         return results

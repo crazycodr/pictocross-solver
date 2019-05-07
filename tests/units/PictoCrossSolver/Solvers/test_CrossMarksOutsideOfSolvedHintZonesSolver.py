@@ -163,8 +163,6 @@ def test_solve_scenario5():
           |
     """
 
-    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
-
     zone = Zone()
     zone.addHint(1)
     zone.addHint(8)
@@ -184,7 +182,7 @@ def test_solve_scenario5():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
 
-    obj.solve(zone)
+    CrossMarksOutsideOfSolvedHintZonesSolver.solve(zone)
     
     assert zone.getMark(0).isFilled()
     assert zone.getMark(1).isCrossed()
@@ -245,8 +243,6 @@ def test_solve_scenario6():
           |
     """
 
-    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
-
     zone = Zone()
     zone.addHint(2)
     zone.addHint(2)
@@ -267,7 +263,7 @@ def test_solve_scenario6():
     zone.addMark(filledMark())
     zone.addMark(ambiguousMark())
 
-    obj.solve(zone)
+    CrossMarksOutsideOfSolvedHintZonesSolver.solve(zone)
     
     assert zone.getMark(0).isAmbiguous()
     assert zone.getMark(1).isAmbiguous()
@@ -284,6 +280,167 @@ def test_solve_scenario6():
     assert zone.getMark(12).isFilled()
     assert zone.getMark(13).isFilled()
     assert zone.getMark(14).isCrossed()
+
+
+def test_solve_scenario7():
+    """
+    Tests that uncertain zone maps are not considered as 
+    potential markable zones.
+
+    In here, column 7 makes the solver think that the
+    mark in row 7 can only be a 1 but this is not true.
+    The mark in row 7 could be part of the hint #1: 3.
+
+    In reality, this is allright as row 11 should have
+    crosses everywhere since the hint #1: 3 is found.
+    But when you look at it in a non related way, the
+    solver is doing something wrong.
+    ---------------------------------------------
+                    1  1                         
+                    1  1                         
+                 3  1  1              1  1       
+                 3  1  1  1        3  1  1       
+                 1  1  1  1        1  1  1  3  1 
+              5  1  1  1  5  3  5  1  1  1  5  1 
+    ---------------------------------------------
+      1 1 2 | ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        5 1 | ?  █  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+      1 1 2 | ?  █  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        3 3 | ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        2 1 | ?  X  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        3 5 | ?  █  ?  ?  ?  ?  ?  █  █  ?  ?  ? 
+            |
+    2 1 1 1 | ?  █  X  X  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        5 5 | ?  █  █  █  █  ?  ?  █  █  █  █  ? 
+            |
+    1 1 1 1 | ?  X  X  X  █  ?  ?  ?  ?  ?  ?  ? 
+            |
+        5 3 | ?  █  █  █  █  ?  ?  ?  ?  ?  ?  ? 
+            |
+        1 1 | ?  X  X  X  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+          3 | ?  █  █  █  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+    """
+
+    zone = Zone()
+    zone.addHint(3)
+    zone.addHint(1)
+    zone.addHint(1)
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+
+    CrossMarksOutsideOfSolvedHintZonesSolver.solve(zone)
+    
+    assert zone.getMark(0).isAmbiguous()
+    assert zone.getMark(1).isAmbiguous()
+    assert zone.getMark(2).isAmbiguous()
+    assert zone.getMark(3).isAmbiguous()
+    assert zone.getMark(4).isAmbiguous()
+    assert zone.getMark(5).isFilled()
+    assert zone.getMark(6).isAmbiguous()
+    assert zone.getMark(7).isFilled()
+    assert zone.getMark(8).isAmbiguous()
+    assert zone.getMark(9).isAmbiguous()
+    assert zone.getMark(10).isAmbiguous()
+    assert zone.getMark(11).isAmbiguous()
+
+
+def test_solve_scenario8():
+    """
+    Tests that overlapping zones that share exactly the
+    same hint size should be considered as proper zones.
+
+    In here, column 8 makes the solver think that 
+    the filled marks are overlapping and they are but
+    considering that all hints in here are 1s, this means
+    that they should still be considered as potential
+    markable zones.
+
+    This can only happen in overlapping sets of marks
+    filled that share the same hint value.
+    ---------------------------------------------
+                    1  1                         
+                    1  1                         
+                 3  1  1              1  1       
+                 3  1  1  1        3  1  1       
+                 1  1  1  1        1  1  1  3  1 
+              5  1  1  1  5  3  5  1  1  1  5  1 
+    ---------------------------------------------
+      1 1 2 | ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        5 1 | ?  █  ?  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+      1 1 2 | X  █  X  ?  ?  ?  ?  ?  ?  ?  █  ? 
+            |
+        3 3 | ?  ?  █  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        2 1 | ?  X  X  ?  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+        3 5 | ?  █  █  ?  ?  ?  ?  █  █  ?  ?  ? 
+            |
+    2 1 1 1 | █  █  X  X  █  X  ?  ?  ?  X  █  X 
+            |
+        5 5 | █  █  █  █  █  X  ?  █  █  █  █  ? 
+            |
+    1 1 1 1 | ?  X  X  X  █  ?  ?  ?  ?  X  █  X 
+            |
+        5 3 | ?  █  █  █  █  ?  ?  ?  ?  ?  ?  ? 
+            |
+        1 1 | ?  X  X  X  ?  ?  ?  ?  ?  ?  ?  ? 
+            |
+          3 | X  █  █  █  X  X  X  X  X  X  X  X 
+            |
+    """
+
+    zone = Zone()
+    zone.addHint(1)
+    zone.addHint(1)
+    zone.addHint(1)
+    zone.addHint(1)
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+
+    CrossMarksOutsideOfSolvedHintZonesSolver.solve(zone)
+    
+    assert zone.getMark(0).isAmbiguous()
+    assert zone.getMark(1).isAmbiguous()
+    assert zone.getMark(2).isAmbiguous()
+    assert zone.getMark(3).isAmbiguous()
+    assert zone.getMark(4).isCrossed()
+    assert zone.getMark(5).isFilled()
+    assert zone.getMark(6).isCrossed()
+    assert zone.getMark(7).isFilled()
+    assert zone.getMark(8).isAmbiguous()
+    assert zone.getMark(9).isAmbiguous()
+    assert zone.getMark(10).isAmbiguous()
+    assert zone.getMark(11).isAmbiguous()
 
 
 def crossedMark():

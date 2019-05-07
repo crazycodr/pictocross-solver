@@ -31,8 +31,8 @@ def test_render_scenario1():
     renderer = SolutionRenderer(grid)
     
     assert renderer.render() == [
-        '█??█',
-        '?XX?',
-        '█?█?',
-        '?X?X'
+        '█  █',
+        ' XX ',
+        '█ █ ',
+        ' X X'
     ]

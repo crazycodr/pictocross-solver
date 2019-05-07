@@ -19,7 +19,7 @@ logger.addHandler(fileLoggingHandler)
 logger.setLevel(logging.DEBUG)
 
 # Load the grid from file
-grid = TextReader.load("puzzles/biggest-picture-cross/animals/puzzle-4-3.txt")
+grid = TextReader.load("tests/integration/puzzles/biggest-picture-cross/animals/puzzle-5-2.txt")
 
 # Prepare a console renderer
 renderer = ConsoleRenderer(grid)

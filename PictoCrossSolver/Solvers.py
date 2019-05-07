@@ -3,7 +3,7 @@ from functools import reduce
 from typing import List
 
 from PictoCrossSolver.Elements import Zone, Mark
-from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer
+from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer, HintSharesFilledMarksWithAnotherHint
 
 class HintFitsInEstimatedZoneSolver:
     """
@@ -193,6 +193,11 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
             # Find out if the hint is fulfilled
             if len(filledMarks) != hint:
                 logging.getLogger(None).debug(f"Hint is not fulfilled yet for #{hintIndex}: {hint}")
+                continue
+            
+            # Ensure mark cannot be shared with another hint
+            if HintSharesFilledMarksWithAnotherHint.analyze(zone, hintIndex):
+                logging.getLogger(None).debug(f"Hint #{hintIndex}: {hint} shares marks with another hint when using slice: {markSlice}")
                 continue
 
             # Find the marks just around this hint and cross them
