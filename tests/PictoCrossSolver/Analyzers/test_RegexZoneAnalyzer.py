@@ -1,4 +1,4 @@
-import PictoCrossSolver.Analyzers
+from PictoCrossSolver.Analyzers import RegexBuilder, RegexZoneAnalyzer
 
 def test_analyze_scenario1():
     """
@@ -7,9 +7,9 @@ def test_analyze_scenario1():
     Pattern should return a possible result of "aaaaaa" for hint 0 from the start
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([1], 0)
+    expression = RegexBuilder.getForwardRegularExpression([1], 0)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(0, 6, None)
 
@@ -21,9 +21,9 @@ def test_analyze_scenario2():
     Pattern should return a possible result of "aa" for hint 0 from the start
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([1], 0)
+    expression = RegexBuilder.getForwardRegularExpression([1], 0)
     
     assert obj.analyze("aabaaa", expression, 0) == slice(0, 2, None)
 
@@ -35,9 +35,9 @@ def test_analyze_scenario3():
     Pattern should return a possible result of "aaa" for hint 0 from the end
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2], 0)
+    expression = RegexBuilder.getForwardRegularExpression([2], 0)
     
     assert obj.analyze("abbaaa", expression, 0) == slice(3, 6, None)
 
@@ -49,9 +49,9 @@ def test_analyze_scenario4():
     Pattern should return a possible result of "mma" for hint 0 from the end
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2], 0)
+    expression = RegexBuilder.getForwardRegularExpression([2], 0)
     
     assert obj.analyze("abbmma", expression, 0) == slice(3, 6, None)
 
@@ -63,9 +63,9 @@ def test_analyze_scenario5():
     Pattern should return a possible result of "aaa" for hint 0 from the start
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2, 2], 0)
+    expression = RegexBuilder.getForwardRegularExpression([2, 2], 0)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(0, 3, None)
 
@@ -77,9 +77,9 @@ def test_analyze_scenario6():
     Pattern should return a possible result of "aa" for hint 0 from the start
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2, 2], 1)
+    expression = RegexBuilder.getForwardRegularExpression([2, 2], 1)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(0, 2, None)
 
@@ -91,9 +91,9 @@ def test_analyze_scenario7():
     Pattern should return a possible result of "aaaa" for hint 1 from the end
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2, 2], 1)
+    expression = RegexBuilder.getForwardRegularExpression([2, 2], 1)
     
     assert obj.analyze("aaaaaa", expression, 1) == slice(3, 6, None)
 
@@ -105,9 +105,9 @@ def test_analyze_scenario8():
     Pattern should return a possible result of "aaa" for hint 1 from the end
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getForwardRegularExpression([2, 2], 0)
+    expression = RegexBuilder.getForwardRegularExpression([2, 2], 0)
     
     assert obj.analyze("aaaaaa", expression, 1) == slice(4, 6, None)
 
@@ -118,9 +118,9 @@ def test_analyze_scenario11():
     In this test, hint 0 is greedy and pattern shows a possible result of "aaaaaa"
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([1], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([1], 0)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(0, 6, None)
 
@@ -131,9 +131,9 @@ def test_analyze_scenario12():
     In this test, hint 0 is greedy and pattern shows a possible result of "aaa"
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([1], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([1], 0)
     
     assert obj.analyze("aaabaa", expression, 0) == slice(0, 3, None)
 
@@ -144,9 +144,9 @@ def test_analyze_scenario13():
     In this test, hint 0 is greedy and pattern shows a possible result of "aaa"
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([2], 0)
     
     assert obj.analyze("aaabba", expression, 0) == slice(0, 3, None)
 
@@ -157,9 +157,9 @@ def test_analyze_scenario14():
     In this test, hint 0 is greedy and pattern shows a possible result of "amm"
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([2], 0)
     
     assert obj.analyze("ammbba", expression, 0) == slice(0, 3, None)
 
@@ -171,9 +171,9 @@ def test_analyze_scenario15():
     should be the last 3 characters
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2, 2], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([2, 2], 0)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(3, 6, None)
 
@@ -185,9 +185,9 @@ def test_analyze_scenario16():
     should be the last 2 characters
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2, 2], 1)
+    expression = RegexBuilder.getBackwardRegularExpression([2, 2], 1)
     
     assert obj.analyze("aaaaaa", expression, 0) == slice(4, 6, None)
 
@@ -199,9 +199,9 @@ def test_analyze_scenario17():
     should be the first 3 characters
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2, 2], 1)
+    expression = RegexBuilder.getBackwardRegularExpression([2, 2], 1)
     
     assert obj.analyze("aaaaaa", expression, 1) == slice(0, 3, None)
 
@@ -213,8 +213,8 @@ def test_analyze_scenario18():
     should be the first 2 characters
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexZoneAnalyzer()
+    obj = RegexZoneAnalyzer()
 
-    expression = PictoCrossSolver.Analyzers.RegexBuilder.getBackwardRegularExpression([2, 2], 0)
+    expression = RegexBuilder.getBackwardRegularExpression([2, 2], 0)
     
     assert obj.analyze("aaaaaa", expression, 1) == slice(0, 2, None)

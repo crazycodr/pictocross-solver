@@ -2,8 +2,8 @@ import logging
 from functools import reduce
 from typing import List
 
-from PictoCrossSolver.PictoCross import Zone, Mark
-import PictoCrossSolver.Analyzers
+from PictoCrossSolver.Elements import Zone, Mark
+from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer
 
 class HintFitsInEstimatedZoneSolver:
     """
@@ -24,7 +24,7 @@ class HintFitsInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]
@@ -115,7 +115,7 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]
@@ -166,7 +166,7 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = PictoCrossSolver.Analyzers.HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]

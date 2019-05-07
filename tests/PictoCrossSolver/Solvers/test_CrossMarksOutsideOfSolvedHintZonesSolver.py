@@ -1,5 +1,5 @@
-import PictoCrossSolver.Solvers
-import PictoCrossSolver.PictoCross
+from PictoCrossSolver.Solvers import CrossMarksOutsideOfSolvedHintZonesSolver
+from PictoCrossSolver.Elements import Zone, Mark
 
 def test_solve_scenario1():
     """
@@ -7,9 +7,9 @@ def test_solve_scenario1():
     3 => aaammmaa => aaxmmmxa
     """
 
-    obj = PictoCrossSolver.Solvers.CrossMarksOutsideOfSolvedHintZonesSolver()
+    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
@@ -37,9 +37,9 @@ def test_solve_scenario2():
     3 => aaaaammm => aaaaxmmm
     """
 
-    obj = PictoCrossSolver.Solvers.CrossMarksOutsideOfSolvedHintZonesSolver()
+    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
@@ -67,9 +67,9 @@ def test_solve_scenario3():
     3 => mmmaaaaa => mmmxaaaa
     """
 
-    obj = PictoCrossSolver.Solvers.CrossMarksOutsideOfSolvedHintZonesSolver()
+    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(filledMark())
     zone.addMark(filledMark())
@@ -97,9 +97,9 @@ def test_solve_scenario4():
     3 => aaammaaa => aaammaaa
     """
 
-    obj = PictoCrossSolver.Solvers.CrossMarksOutsideOfSolvedHintZonesSolver()
+    obj = CrossMarksOutsideOfSolvedHintZonesSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
@@ -122,16 +122,16 @@ def test_solve_scenario4():
     assert zone.getMark(7).isAmbiguous()
 
 def crossedMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setCrossed()
     return mark
 
 def filledMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setFilled()
     return mark
 
 def ambiguousMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setAmbiguous()
     return mark

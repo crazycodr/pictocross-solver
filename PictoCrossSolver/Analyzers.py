@@ -1,5 +1,5 @@
 import re
-from PictoCrossSolver.PictoCross import Zone
+from PictoCrossSolver.Elements import Zone
 
 class RegexBuilder:
     """

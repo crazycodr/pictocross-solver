@@ -1,9 +1,31 @@
-import PictoCrossSolver.PictoCross
+from PictoCrossSolver.Elements import Grid
 
 class TextLoader:
+    """
+    Used to load puzzles from text files containing 2 lines
+    - First line contains the column definitions
+    - Second line contains the row definitions
+
+    All definitions are structure like this:
+    - Each column or row definition is separated by a forward slash "/"
+    - Each hint in a definition is separated by a comma ","
+
+    Example:
+    1/1/2,3 means 3 definitions:
+    - Definition 1 has only 1 hint: 1
+    - Definition 2 has only 1 hint: 1
+    - Definition 3 has 2 hints: 2 and 3
+    """    
 
     @staticmethod
-    def load(file: str) -> PictoCrossSolver.PictoCross.Grid :
+    def load(file: str) -> Grid :
+        """
+        Loads the file into memory and returns a grid
+
+        @param str file to load
+
+        @return Grid
+        """
 
         # Load the file as a stream
         with open(file, "r+") as handle:
@@ -11,7 +33,7 @@ class TextLoader:
             rowHints = handle.readline().strip().split("/")
         
         # Create a grid
-        grid = PictoCrossSolver.PictoCross.Grid(len(rowHints), len(columnHints))
+        grid = Grid(len(rowHints), len(columnHints))
 
         # For each rowHint, add the hints
         for rowIndex, rowHint in enumerate(rowHints):

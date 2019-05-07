@@ -1,5 +1,5 @@
-import PictoCrossSolver.Solvers
-import PictoCrossSolver.PictoCross
+from PictoCrossSolver.Solvers import HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver
+from PictoCrossSolver.Elements import Zone, Mark
 
 def test_solve_scenario1():
     """
@@ -7,9 +7,9 @@ def test_solve_scenario1():
     xmmaaxxa => xmmmaxxa
     """
 
-    obj = PictoCrossSolver.Solvers.HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
+    obj = HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(crossedMark())
     zone.addMark(filledMark())
@@ -37,9 +37,9 @@ def test_solve_scenario2():
     xaammxxa => xammmxxa
     """
 
-    obj = PictoCrossSolver.Solvers.HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
+    obj = HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(3)
     zone.addMark(crossedMark())
     zone.addMark(ambiguousMark())
@@ -68,9 +68,9 @@ def test_solve_scenario3():
     xammmmmx => xmmmmmmx
     """
 
-    obj = PictoCrossSolver.Solvers.HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
+    obj = HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addHint(6)
     zone.addMark(crossedMark())
     zone.addMark(ambiguousMark())
@@ -93,16 +93,16 @@ def test_solve_scenario3():
     assert zone.getMark(7).isCrossed() == True
 
 def crossedMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setCrossed()
     return mark
 
 def filledMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setFilled()
     return mark
 
 def ambiguousMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setAmbiguous()
     return mark

@@ -2,7 +2,7 @@ import itertools
 import logging
 import os
 
-from PictoCrossSolver.PictoCross import Grid
+from PictoCrossSolver.Elements import Grid
 from PictoCrossSolver.Renderers import ConsoleRenderer
 from PictoCrossSolver.Solvers import *
 from PictoCrossSolver.Loaders import TextLoader

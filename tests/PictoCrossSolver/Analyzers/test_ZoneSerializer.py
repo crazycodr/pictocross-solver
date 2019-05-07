@@ -1,14 +1,14 @@
-import PictoCrossSolver.Analyzers
-import PictoCrossSolver.PictoCross
+from PictoCrossSolver.Analyzers import ZoneSerializer
+from PictoCrossSolver.Elements import Zone, Mark
 
 def test_serialize_scenario1():
     """
     Tests that serializer returns proper result
     """
 
-    obj = PictoCrossSolver.Analyzers.ZoneSerializer()
+    obj = ZoneSerializer()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
@@ -24,9 +24,9 @@ def test_serialize_scenario2():
     Tests that serializer returns proper result
     """
 
-    obj = PictoCrossSolver.Analyzers.ZoneSerializer()
+    obj = ZoneSerializer()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addMark(filledMark())
     zone.addMark(filledMark())
     zone.addMark(filledMark())
@@ -42,9 +42,9 @@ def test_serialize_scenario3():
     Tests that serializer returns proper result
     """
 
-    obj = PictoCrossSolver.Analyzers.ZoneSerializer()
+    obj = ZoneSerializer()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addMark(crossedMark())
     zone.addMark(crossedMark())
     zone.addMark(crossedMark())
@@ -60,9 +60,9 @@ def test_serialize_scenario4():
     Tests that serializer returns proper result
     """
 
-    obj = PictoCrossSolver.Analyzers.ZoneSerializer()
+    obj = ZoneSerializer()
 
-    zone = PictoCrossSolver.PictoCross.Zone()
+    zone = Zone()
     zone.addMark(crossedMark())
     zone.addMark(filledMark())
     zone.addMark(filledMark())
@@ -74,18 +74,18 @@ def test_serialize_scenario4():
 
 
 def crossedMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setCrossed()
     return mark
 
 
 def filledMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setFilled()
     return mark
 
 
 def ambiguousMark():
-    mark = PictoCrossSolver.PictoCross.Mark()
+    mark = Mark()
     mark.setAmbiguous()
     return mark

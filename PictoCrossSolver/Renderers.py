@@ -1,7 +1,7 @@
 import sys
 import logging
 
-from PictoCrossSolver.PictoCross import Grid
+from PictoCrossSolver.Elements import Grid
 
 class ConsoleRenderer:
     """
@@ -53,6 +53,9 @@ class ConsoleRenderer:
 
     
     def render(self):
+        """
+        Renders the currently attached grid to the logger
+        """
 
         # Render each _yHint
         for hintRow in self._columnHints:

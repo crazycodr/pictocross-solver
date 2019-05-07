@@ -1,4 +1,4 @@
-import PictoCrossSolver.Analyzers
+from PictoCrossSolver.Analyzers import RegexBuilder
 
 def test_getRegularExpressionParts_scenario1():
     """
@@ -6,7 +6,7 @@ def test_getRegularExpressionParts_scenario1():
     1 hint should have 1 part
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     parts = obj.getRegularExpressionParts([1], 0)
 
@@ -18,7 +18,7 @@ def test_getRegularExpressionParts_scenario2():
     2 hints should have 3 parts
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     parts = obj.getRegularExpressionParts([1, 1], 0)
 
@@ -32,7 +32,7 @@ def test_getRegularExpressionParts_scenario3():
     Items should feature proper size constraints
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     parts = obj.getRegularExpressionParts([2, 4], 0)
 
@@ -49,7 +49,7 @@ def test_getRegularExpressionParts_scenario4():
     Items should feature proper size constraints
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     parts = obj.getRegularExpressionParts([2, 4], 1)
 
@@ -64,7 +64,7 @@ def test_getForwardRegularExpression_scenario1():
     2 hints should have 5 parts, lazy prefix, 1 greedy part, 1 separator, 1 lazy part, greedy suffix
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     expression = obj.getForwardRegularExpression([2, 4], 0)
 
@@ -86,7 +86,7 @@ def test_getBackwardRegularExpression_scenario1():
     But everything should be flipped around
     """
 
-    obj = PictoCrossSolver.Analyzers.RegexBuilder()
+    obj = RegexBuilder()
     
     expression = obj.getBackwardRegularExpression([2, 4], 0)
 

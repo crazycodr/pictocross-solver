@@ -1,5 +1,5 @@
 from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer
-from PictoCrossSolver.PictoCross import Zone, Mark
+from PictoCrossSolver.Elements import Zone, Mark
 
 def test_analyze_scenario1():
     """
