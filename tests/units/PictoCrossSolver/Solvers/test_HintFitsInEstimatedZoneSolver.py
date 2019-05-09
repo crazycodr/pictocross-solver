@@ -1,6 +1,7 @@
 from PictoCrossSolver.Solvers import HintFitsInEstimatedZoneSolver
 from PictoCrossSolver.Elements import Zone, Mark
 
+
 def test_solve_scenario1():
     """
     Tests that a real life scenario regression
@@ -39,6 +40,7 @@ def test_solve_scenario1():
     assert zone.getMark(9).isFilled()
     assert zone.getMark(10).isFilled()
     assert zone.getMark(11).isFilled()
+
 
 def crossedMark():
     mark = Mark()

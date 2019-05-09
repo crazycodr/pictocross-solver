@@ -1,4 +1,4 @@
-from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer
+from PictoCrossSolver.Analyzers import HintIntersectionRegexAnalyzer
 from PictoCrossSolver.Elements import Zone, Mark
 
 def test_analyze_scenario1():
@@ -18,7 +18,7 @@ def test_analyze_scenario1():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(0, 6, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 0) == slice(0, 6, None)
 
 def test_analyze_scenario2():
     """
@@ -47,8 +47,8 @@ def test_analyze_scenario2():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(0, 3, None)
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 1) == slice(3, 6, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 0) == slice(0, 3, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 1) == slice(3, 6, None)
 
 def test_analyze_scenario3():
     """
@@ -84,8 +84,8 @@ def test_analyze_scenario3():
     zone.addMark(filledMark())
     zone.addMark(filledMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(0, 9, None)
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 1) == slice(10, 12, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 0) == slice(0, 9, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 1) == slice(10, 12, None)
 
 def test_analyze_scenario4():
     """
@@ -114,7 +114,7 @@ def test_analyze_scenario4():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == slice(1, 8, None)
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 0) == slice(1, 8, None)
 
 def test_analyze_scenario5():
     """
@@ -143,7 +143,7 @@ def test_analyze_scenario5():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 0) == None
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 0) == None
 
 def test_analyze_scenario6():
     """
@@ -210,7 +210,7 @@ def test_analyze_scenario6():
     zone.addMark(ambiguousMark())
     zone.addMark(ambiguousMark())
     
-    assert HintCrossoverRegexAnalyzer.analyze(zone, 1) == None
+    assert HintIntersectionRegexAnalyzer.analyze(zone, 1) == None
     
 
 def crossedMark():

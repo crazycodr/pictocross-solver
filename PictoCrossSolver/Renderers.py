@@ -60,10 +60,10 @@ class ConsoleRenderer:
 
         # Render each _yHint
         for hintRow in self._columnHints:
-            logging.getLogger(None).info(hintRow)
+            logging.getLogger("changes").info(hintRow)
         
         # Print the separator
-        logging.getLogger(None).info(max(len(hint) for hint in self._columnHints) * "-")
+        logging.getLogger("changes").info(max(len(hint) for hint in self._columnHints) * "-")
         
         # Render each _xHint and corresponding zone
         for index, hintRow in enumerate(self._rowHints):
@@ -76,8 +76,8 @@ class ConsoleRenderer:
                     render += " X "
                 else:
                     render += "   "
-            logging.getLogger(None).info(render)
-            logging.getLogger(None).info(self._pipeOnlySpacer)
+            logging.getLogger("changes").info(render)
+            logging.getLogger("changes").info(self._pipeOnlySpacer)
 
 class SolutionRenderer:
     """

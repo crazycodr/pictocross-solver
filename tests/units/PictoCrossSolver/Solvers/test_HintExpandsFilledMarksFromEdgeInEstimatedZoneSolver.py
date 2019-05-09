@@ -175,6 +175,80 @@ def test_analyze_scenario4():
     assert zone.getMark(14).isAmbiguous()
 
 
+def test_analyze_scenario5():
+    """
+    Tests a scenario that currently returns wrong zones for a hint.
+
+    Row 4 currently thinks that mark in column 7 is part of hint #1
+    but it could very well be part of hint #2.
+
+    Nothing should change.
+    ---------------------------------------------
+                    1  1                         
+                    1  1                         
+                 3  1  1              1  1       
+                 3  1  1  1        3  1  1       
+                 1  1  1  1        1  1  1  3  1 
+              5  1  1  1  5  3  5  1  1  1  5  1 
+    ---------------------------------------------
+      1 1 2 |                                    
+            |
+        5 1 |    █                               
+            |
+      1 1 2 | X  █  X              X        █    
+            |
+        3 3 |       █              █             
+            |
+        2 1 |    X  X              █  X          
+            |
+        3 5 |    █  █              █  █          
+            |
+    2 1 1 1 | █  █  X  X  █        X  X  X  █    
+            |
+        5 5 | █  █  █  █  █        █  █  █  █    
+            |
+    1 1 1 1 | █  X  X  X  █  X     X  X  X  █  X 
+            |
+        5 3 |    █  █  █  █                      
+            |
+        1 1 |    X  X  X                         
+            |
+          3 | X  █  █  █  X  X  X  X  X  X  X  X 
+            |
+    """
+
+    zone = Zone()
+    zone.addHint(2)
+    zone.addHint(1)
+    zone.addMark(ambiguousMark())
+    zone.addMark(crossedMark())
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+
+    HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver.solve(zone)
+    
+    assert zone.getMark(0).isAmbiguous()
+    assert zone.getMark(1).isCrossed()
+    assert zone.getMark(2).isCrossed()
+    assert zone.getMark(3).isAmbiguous()
+    assert zone.getMark(4).isAmbiguous()
+    assert zone.getMark(5).isAmbiguous()
+    assert zone.getMark(6).isAmbiguous()
+    assert zone.getMark(7).isFilled()
+    assert zone.getMark(8).isCrossed()
+    assert zone.getMark(9).isAmbiguous()
+    assert zone.getMark(10).isAmbiguous()
+    assert zone.getMark(11).isAmbiguous()
+
+
 def crossedMark():
     mark = Mark()
     mark.setCrossed()

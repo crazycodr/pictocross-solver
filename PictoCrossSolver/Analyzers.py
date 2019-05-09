@@ -1,5 +1,6 @@
 import re
-from PictoCrossSolver.Elements import Zone
+from PictoCrossSolver.Elements import Zone, Mark
+from typing import List
 
 class RegexBuilder:
     """
@@ -13,24 +14,15 @@ class RegexBuilder:
     """
 
     @staticmethod
-    @DeprecationWarning
-    def getRegularExpressions(hints: list) -> list:
-        """
-        Produces the regular expressions based on hints.
-        """
-
-        # Produce a regex for each hint
-        regexes = []
-        for hintIndex, dummy in enumerate(hints):
-            regexes.append(RegexBuilder.getForwardRegularExpression(hints, hintIndex))
-
-        return regexes
-
-    @staticmethod
-    def getRegularExpressionParts(hints: list, greedyHintIndex: int) -> list:
+    def getRegularExpressionParts(hints: List[int], greedyHintIndex: int) -> List[str]:
         """
         Produces the regular expressions parts based on hints and greedy hint index specifier
         but doesn't produce the prefix or suffix, this has to be added by the parents calling this
+
+        @param List[int] hints to generate expression for
+        @param int greedyHintIndex specifying which hint should be greedy in the regular expression
+
+        @return List[str]
         """
 
         # Contains all parts of the regex as string blocks
@@ -55,9 +47,14 @@ class RegexBuilder:
         return parts
 
     @staticmethod
-    def getForwardRegularExpression(hints: list, greedyHintIndex: int) -> str:
+    def getForwardRegularExpression(hints: List[int], greedyHintIndex: int) -> str:
         """
         Produce a regular expression based on hints in a forward fashion
+
+        @param List[int] hints to generate expression for
+        @param int greedyHintIndex specifying which hint should be greedy in the regular expression
+
+        @return str
         """
 
         # Contains all parts of the regex as string blocks
@@ -77,9 +74,14 @@ class RegexBuilder:
 
 
     @staticmethod
-    def getBackwardRegularExpression(hints: list, greedyHintIndex: int) -> str:
+    def getBackwardRegularExpression(hints: List[int], greedyHintIndex: int) -> str:
         """
         Produce a regular expression based on hints but in a backwards fashion
+
+        @param List[int] hints to generate expression for
+        @param int greedyHintIndex specifying which hint should be greedy in the regular expression
+
+        @return str
         """
 
         # Contains all parts of the regex as string blocks
@@ -109,6 +111,10 @@ class ZoneSerializer:
     def serialize(zone: Zone) -> str:
         """
         Serializes the Zone into a list of values usable in generated regular expressions
+
+        @param Zone zone to serialize
+
+        @return str
         """
 
         results = []
@@ -160,7 +166,7 @@ class RegexZoneAnalyzer:
         # Bundle up the indexes into a slice, includes the last character
         return slice(startIndex, stopIndex)
 
-class HintCrossoverRegexAnalyzer:
+class HintIntersectionRegexAnalyzer:
     """
     This is an added layer over the RegexZoneAnalyzer that runs both a straightforward version of the regex
     over the pattern and then a reversed one that will return the real slice that applies.
@@ -196,9 +202,8 @@ class HintCrossoverRegexAnalyzer:
         Runs the analysis on the pattern that comes from a Zone and was serialized
         and uses the matcher against it and returns a slice representing the hit zone.
 
-        @param str pattern to match against
-        @param str matcher is the regex to apply
-        @param int hint is the index of the hint to extract
+        @param Zone zone to analyze
+        @param int hintIndex to analyze
 
         @return slice
         """
@@ -215,7 +220,11 @@ class HintCrossoverRegexAnalyzer:
         forwardSlice = RegexZoneAnalyzer.analyze(forwardPattern, forwardExpression, hintIndex)
         backwardSlice = RegexZoneAnalyzer.analyze(backwardPattern, backwardExpression, hintIndex)
 
-        # If the backward slice is wrong, we should just exit, there can't be any match
+        # If the forward or backward slice is invalid, yield nothing
+        if forwardSlice.start == None or forwardSlice.stop == None:
+            return None
+        if backwardSlice.start == None or backwardSlice.stop == None:
+            return None
 
         # Reverse the backward slice
         backwardSlice = slice(
@@ -264,9 +273,8 @@ class HintSharesFilledMarksWithAnotherHint:
         Runs the analysis on the pattern that comes from a Zone and was serialized
         and uses the matcher against it and returns a slice representing the hit zone.
 
-        @param str pattern to match against
-        @param str matcher is the regex to apply
-        @param int hint is the index of the hint to extract
+        @param Zone zone to analyze
+        @param int hintIndex to analyze
 
         @return slice
         """
@@ -274,10 +282,12 @@ class HintSharesFilledMarksWithAnotherHint:
         # Gather all slices for hints
         hintSlices = {}
         for innerHintIndex, hint in enumerate(zone.getHints()):
-            hintSlices[innerHintIndex] = HintCrossoverRegexAnalyzer.analyze(zone, innerHintIndex)
+            hintSlices[innerHintIndex] = HintIntersectionRegexAnalyzer.analyze(zone, innerHintIndex)
 
         # Compare the master slice with all other slices to find potential intersections of filled slices
         masterSlice = hintSlices[hintIndex]
+        if masterSlice == None:
+            return None
         masterSet = set(range(masterSlice.start, masterSlice.stop))
         for otherSliceIndex in hintSlices.keys():
             if otherSliceIndex == hintIndex:
@@ -298,3 +308,127 @@ class HintSharesFilledMarksWithAnotherHint:
             otherHint = zone.getHints()[otherSliceIndex]
             if filledMarksInRange and masterHint != otherHint:
                 return True
+
+class HintUnionRegexAnalyzer:
+    """
+    This is an added layer over the RegexZoneAnalyzer that runs both a straightforward version of the regex
+    over the pattern and then a reversed one that will return the union of both slices.
+
+    On the contrary of HintIntersectionRegexAnalyzer, this analyzer gets all of the potential zones instead of
+    only the possible zones that intersect. This can be used to get all other zones not covered by any hint
+    placement at all such as in the CrossMarksUnreachableByAnyHint solver.
+
+    Example:
+
+    (3,1,1) => "??XOOOXOX??X" should yield that the first 2 "??" are unreachable because the hint #1 is already
+    fulfilled.
+    """
+
+    @staticmethod
+    def analyze(zone: Zone, hintIndex: int) -> slice:
+        """
+        Runs the analysis on the pattern that comes from a Zone and was serialized
+        and uses the matcher against it and returns a slice representing the hit zone.
+
+        @param Zone zone to analyze
+        @param int hintIndex to analyze
+
+        @return slice
+        """
+
+        # Get the serialized versions
+        forwardPattern = ZoneSerializer.serialize(zone)
+        backwardPattern = forwardPattern[::-1]
+
+        # Get the regular expressions forward and reverse
+        forwardExpression = RegexBuilder.getForwardRegularExpression(zone.getHints(), hintIndex)
+        backwardExpression = RegexBuilder.getBackwardRegularExpression(zone.getHints(), hintIndex)
+
+        # Get the results both for forward and backward setup
+        forwardSlice = RegexZoneAnalyzer.analyze(forwardPattern, forwardExpression, hintIndex)
+        backwardSlice = RegexZoneAnalyzer.analyze(backwardPattern, backwardExpression, hintIndex)
+
+        # If the forward or backward slice is invalid, yield nothing
+        if forwardSlice.start == None or forwardSlice.stop == None:
+            return slice(0, len(zone.getMarks()))
+        if backwardSlice.start == None or backwardSlice.stop == None:
+            return slice(0, len(zone.getMarks()))
+
+        # Reverse the backward slice
+        backwardSlice = slice(
+            len(zone.getMarks()) - backwardSlice.stop,
+            len(zone.getMarks()) - backwardSlice.start
+        )
+
+        # Union both slices and return a huge slice that covers both
+        forwardSet = set(range(forwardSlice.start, forwardSlice.stop))
+        backwardSet = set(range(backwardSlice.start, backwardSlice.stop))
+        union = forwardSet.union(backwardSet)
+        resultingSlice = slice(
+            min(value for value in union),
+            max(value for value in union) + 1
+        )
+
+        # Find out if there are contiguous filled marks in that slice, if so, we should adjust the slice
+        # to return only potential marks around those marks and not the full zone.
+        # Make sure that the filled marks in this hint are not shared with other hints!
+        resultingFilledMarks = list(mark for mark in zone.getMarks()[resultingSlice] if mark.isFilled())
+        if len(resultingFilledMarks) == 0 or not HintMarksContiguousAnalyzer.analyze(zone, resultingFilledMarks) or HintSharesFilledMarksWithAnotherHint.analyze(zone, hintIndex):
+            return resultingSlice
+        
+        # Because all filled marks are contiguous, we should assume that the hint falls directly
+        # around these marks and not on the full slice
+
+        # First, find the slice that corresponds to the filled marks
+        filledMarksLen = len(resultingFilledMarks)
+        hint = zone.getHints()[hintIndex]
+        missingMarksLen = hint - filledMarksLen
+        filledMarksSlice = None
+        for markIndex, mark in enumerate(zone.getMarks()):
+            if mark is resultingFilledMarks[0]:
+                filledMarksSlice = slice(markIndex, markIndex + filledMarksLen)
+                break
+
+        # Next, find the preceding and following mark slices
+        precedingSlice = slice(max(resultingSlice.start, filledMarksSlice.start - missingMarksLen), filledMarksSlice.start)
+        followingSlice = slice(filledMarksSlice.stop, min(resultingSlice.stop, filledMarksSlice.stop + missingMarksLen))
+        
+        # Send back a new slice combining preceding, filled and following marks
+        return slice(precedingSlice.start, followingSlice.stop)
+
+        
+
+
+class HintMarksContiguousAnalyzer:
+    """
+    This is analyzer takes a series of marks from a zone and ensures they are contiguous. This is necessary in
+    some solvers like the CrossMarksOutsideOfSolvedHintZonesSolver to ensure that the filled marks that it found
+    are contiguous and not split by other ambiguous marks.
+
+    Example:
+
+    (3,3) => "X?OO???O????" should yield that the filled zones are not contiguous.
+    """
+
+    @staticmethod
+    def analyze(zone: Zone, searchedMarks: List[Mark]) -> bool:
+        """
+        Runs the analysis on the zone to find the marks and ensure they are contiguous.
+
+        @param Zone zone to analyze
+        @param List[Mark] searchedMarks to find
+
+        @return bools
+        """
+
+        # Find the indexes of each mark
+        indexes = set()
+        for zoneMarkIndex, zoneMark in enumerate(zone.getMarks()):
+            for searchedMark in searchedMarks:
+                if searchedMark is zoneMark:
+                    indexes.update({zoneMarkIndex})
+        
+        # Find the min, the max and return true if the different is not 0 when removing the len of marks searched for
+        minIndex = min(value for value in indexes)
+        maxIndex = max(value for value in indexes) + 1
+        return maxIndex - minIndex - len(searchedMarks) == 0

@@ -8,7 +8,7 @@ from PictoCrossSolver.Solvers import *
 from PictoCrossSolver.Readers import TextReader
 from PictoCrossSolver.Writers import SolutionWriter
 
-# Setup logging
+# Setup standard logging
 logger = logging.getLogger(None)
 consoleLoggingHandler = logging.StreamHandler()
 consoleLoggingHandler.setLevel(logging.INFO)
@@ -17,6 +17,12 @@ fileLoggingHandler.setLevel(logging.DEBUG)
 logger.addHandler(consoleLoggingHandler)
 logger.addHandler(fileLoggingHandler)
 logger.setLevel(logging.DEBUG)
+
+# Setup the changes only logging
+changesLogger = logging.getLogger("changes")
+changesLoggingHandler = logging.FileHandler(filename = os.getcwd() + '/changes.log', mode = 'w')
+changesLoggingHandler.setLevel(logging.DEBUG)
+changesLogger.addHandler(changesLoggingHandler)
 
 # Load the grid from file
 grid = TextReader.load("tests/integration/puzzles/biggest-picture-cross/animals/puzzle-5-2.txt")
@@ -30,6 +36,7 @@ solvers.append(HintFitsInEstimatedZoneSolver())
 solvers.append(CrossAmbiguousZonesInCompletedHintsSolver())
 solvers.append(HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver())
 solvers.append(CrossMarksOutsideOfSolvedHintZonesSolver())
+solvers.append(CrossMarksUnreachableByAnyHint())
 
 # Show the initial puzzle empty
 logger.info("---------------------------------------------")
@@ -89,9 +96,6 @@ while hasChanges:
 
 logger.info("---------------------------------------------")
 renderer.render()
-fileLoggingHandler.close()
-consoleLoggingHandler.flush()
-consoleLoggingHandler.close()
 
 # Print the solution to solution.txt
 SolutionWriter.write(os.getcwd() + '/solution.txt', grid)

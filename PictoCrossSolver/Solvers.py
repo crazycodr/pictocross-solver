@@ -3,7 +3,7 @@ from functools import reduce
 from typing import List
 
 from PictoCrossSolver.Elements import Zone, Mark
-from PictoCrossSolver.Analyzers import HintCrossoverRegexAnalyzer, HintSharesFilledMarksWithAnotherHint
+from PictoCrossSolver.Analyzers import *
 
 class HintFitsInEstimatedZoneSolver:
     """
@@ -24,7 +24,7 @@ class HintFitsInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintIntersectionRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]
@@ -115,7 +115,7 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintIntersectionRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]
@@ -146,6 +146,11 @@ class HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver:
             # Ensure mark right after or before is crossed, prevent test_analyze_scenario4
             if edgeMark == None or not edgeMark.isCrossed():
                 continue
+            
+            # Ensure mark cannot be shared with another hint
+            if HintSharesFilledMarksWithAnotherHint.analyze(zone, hintIndex):
+                logging.getLogger(None).debug(f"Hint #{hintIndex}: {hint} shares marks with another hint when using slice: {markSlice}")
+                continue
 
             # Fill all marks from the edge to edge + hint
             hasChanges = False
@@ -175,7 +180,7 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
         for hintIndex, hint in enumerate(zone.getHints()):
 
             # First get the zones affected by the matcher
-            markSlice = HintCrossoverRegexAnalyzer.analyze(zone, hintIndex)
+            markSlice = HintIntersectionRegexAnalyzer.analyze(zone, hintIndex)
             if markSlice == None:
                 return False
             marks = zone.getMarks()[markSlice]
@@ -190,8 +195,8 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
             # Extract the filled marks
             filledMarks = list(mark for mark in marks if mark.isFilled())
 
-            # Find out if the hint is fulfilled
-            if len(filledMarks) != hint:
+            # Find out if the hint is fulfilled in a contiguous way
+            if len(filledMarks) != hint or not HintMarksContiguousAnalyzer.analyze(zone, filledMarks):
                 logging.getLogger(None).debug(f"Hint is not fulfilled yet for #{hintIndex}: {hint}")
                 continue
             
@@ -239,3 +244,46 @@ class CrossMarksOutsideOfSolvedHintZonesSolver:
             # Only return if there are changes, else continue with next hint
             if hasChanges:            
                 return hasChanges
+
+class CrossMarksUnreachableByAnyHint:
+    """
+    Crosses marks that fall into prefix or suffix range on both forward and backward passes.
+    When you haven't completed a zone yet, sometimes, crossing marks that are obviously impossible
+    to reach will unblock other marks and hints in different zones.
+    """
+
+    @staticmethod
+    def solve(zone: Zone) -> bool:
+        """
+        Applies the logic and returns true if something was altered
+
+        @param Zone zone to apply logic to
+
+        @return bool
+        """
+
+        # Loop all hints to create a big slice where all marks can be seen from
+        reachableIndexes = set()
+        for hintIndex, hint in enumerate(zone.getHints()):
+
+            # Get the slice represented by this hint on both passes as a union, not as an intersection
+            markSlice = HintUnionRegexAnalyzer.analyze(zone, hintIndex)
+            if markSlice == None:
+                continue
+            reachableIndexes.update(set(range(markSlice.start, markSlice.stop)))
+        
+        # Find missing items
+        fullSet = set(range(len(zone.getMarks())))
+        unreachableIndexes = fullSet.difference(reachableIndexes)
+
+        # Cross the missing items
+        hasChanges = False
+        for unreachableIndex in unreachableIndexes:
+
+            if not zone.getMark(unreachableIndex).isCrossed():
+                hasChanges = True
+                zone.getMark(unreachableIndex).setCrossed()
+
+        # Only return if there are changes, else continue with next hint
+        if hasChanges:            
+            return hasChanges

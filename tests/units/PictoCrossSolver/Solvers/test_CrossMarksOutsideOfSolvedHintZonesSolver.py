@@ -443,6 +443,81 @@ def test_solve_scenario8():
     assert zone.getMark(11).isAmbiguous()
 
 
+def test_solve_scenario9():
+    """
+    Tests that crossing happens only on fulfilled zones
+    with nothing else in it.
+
+    Current scenario in row 3 crosses column 1 and column
+    8 because it seems to think that hint #1 is covered by
+    columns 2 to 7. The code is checking only for the number
+    of filled hints vs hint and not number of marks.
+    ---------------------------------------------
+                    1  1                         
+                    1  1                         
+                 3  1  1              1  1       
+                 3  1  1  1        3  1  1       
+                 1  1  1  1        1  1  1  3  1 
+              5  1  1  1  5  3  5  1  1  1  5  1 
+    ---------------------------------------------
+      1 1 2 | X     X  X  X     X  X             
+            |
+        5 1 | X  █  █  █  █  █  X  X             
+            |
+      1 1 2 | X  █  X  X  X        X        █    
+            |
+        3 3 | X     █  █           █             
+            |
+        2 1 | X  X  X  X           █  X          
+            |
+        3 5 |    █  █  █           █  █          
+            |
+    2 1 1 1 | █  █  X  X  █  X  █  X  X  X  █  X 
+            |
+        5 5 | █  █  █  █  █  X     █  █  █  █    
+            |
+    1 1 1 1 | █  X  X  X  █  X  █  X  X  X  █  X 
+            |
+        5 3 | █  █  █  █  █  X                   
+            |
+        1 1 |    X  X  X     X                   
+            |
+          3 | X  █  █  █  X  X  X  X  X  X  X  X 
+            |
+    """
+
+    zone = Zone()
+    zone.addHint(3)
+    zone.addHint(3)
+    zone.addMark(crossedMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(filledMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+    zone.addMark(ambiguousMark())
+
+    CrossMarksOutsideOfSolvedHintZonesSolver.solve(zone)
+    
+    assert zone.getMark(0).isCrossed()
+    assert zone.getMark(1).isAmbiguous()
+    assert zone.getMark(2).isFilled()
+    assert zone.getMark(3).isFilled()
+    assert zone.getMark(4).isAmbiguous()
+    assert zone.getMark(5).isAmbiguous()
+    assert zone.getMark(6).isAmbiguous()
+    assert zone.getMark(7).isFilled()
+    assert zone.getMark(8).isAmbiguous()
+    assert zone.getMark(9).isAmbiguous()
+    assert zone.getMark(10).isAmbiguous()
+    assert zone.getMark(11).isAmbiguous()
+
+
 def crossedMark():
     mark = Mark()
     mark.setCrossed()
