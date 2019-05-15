@@ -3,7 +3,6 @@ from typing import Callable, List
 
 from PictoCrossSolver.Elements import Puzzle, PuzzleChange, PuzzleChangeAction
 from PictoCrossSolver.Renderers import ConsoleRenderer
-from PictoCrossSolver.Solvers import *
 from PictoCrossSolver.Strategies import Strategy
 
 class EventDrivenEngine:

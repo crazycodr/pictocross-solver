@@ -1,8 +1,7 @@
 from typing import List
-from functools import reduce
 import re
 from PictoCrossSolver.Elements import Mark, ZoneType, Zone, Puzzle, PuzzleChange, PuzzleChangeAction
-from PictoCrossSolver.Helpers import ChangeMinimizer, HintPositionner
+from PictoCrossSolver.Helpers import HintPositionner
 
 class Strategy:
 
@@ -29,8 +28,8 @@ class ChangeUsingHintPositionner(Strategy):
         for zoneIndex, zone in enumerate(puzzle.getColumnZones()):
             changes += self.applyOnZone(ZoneType.COLUMN, zone, zoneIndex)
         
-        # Minimize the changes
-        return ChangeMinimizer.minimize(puzzle, changes)
+        # Return the changes
+        return changes
     
     def applyOnZone(self, zoneType: ZoneType, zone: Zone, zoneIndex: int) -> List[PuzzleChange]:
         """

@@ -1,3 +1,4 @@
+from typing import List
 from PictoCrossSolver.Elements import Puzzle
 
 class TextPuzzleReader:
@@ -46,3 +47,26 @@ class TextPuzzleReader:
                 puzzle.getColumnZone(columnIndex).addHint(int(hint))
         
         return puzzle
+
+class TextSolutionReader:
+    """
+    Used to load solutions from text files containing a
+    pre-rendered puzzle
+    """    
+
+    @staticmethod
+    def load(file: str) -> List[str] :
+        """
+        Loads the file into memory and returns a list of strings
+
+        @param str file to load
+
+        @return List[str]
+        """
+
+        with open(file, 'r') as solutionStream:
+            solution = solutionStream.readlines()
+            for index, line in enumerate(solution):
+                solution[index] = line.strip()
+        
+        return solution

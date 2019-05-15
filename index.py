@@ -40,4 +40,4 @@ engine.onChangesApplied(changeAppliedWatcher)
 solvedPuzzle = engine.solve(puzzle)
 
 # Print the solution to solution.txt
-SolutionWriter.write(os.getcwd() + '/solution.txt', solvedPuzzle)
+SolutionWriter.write(os.getcwd() + '/solution.txt', solvedPuzzle.applyChanges())
