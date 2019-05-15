@@ -33,7 +33,7 @@ def test_solve_scenario1():
 
 def test_solve_scenario2():
     """
-    Tests that previous mark only is changed because zone is on edge of grid
+    Tests that previous mark only is changed because zone is on edge of puzzle
     3 => aaaaammm => aaaaxmmm
     """
 
@@ -63,7 +63,7 @@ def test_solve_scenario2():
 
 def test_solve_scenario3():
     """
-    Tests that next mark only is changed because zone is on edge of grid
+    Tests that next mark only is changed because zone is on edge of puzzle
     3 => mmmaaaaa => mmmxaaaa
     """
 

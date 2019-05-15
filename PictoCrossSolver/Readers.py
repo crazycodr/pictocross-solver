@@ -1,6 +1,6 @@
-from PictoCrossSolver.Elements import Grid
+from PictoCrossSolver.Elements import Puzzle
 
-class TextReader:
+class TextPuzzleReader:
     """
     Used to load puzzles from text files containing 2 lines
     - First line contains the column definitions
@@ -18,13 +18,13 @@ class TextReader:
     """    
 
     @staticmethod
-    def load(file: str) -> Grid :
+    def load(file: str) -> Puzzle :
         """
-        Loads the file into memory and returns a grid
+        Loads the file into memory and returns a puzzle
 
         @param str file to load
 
-        @return Grid
+        @return Puzzle
         """
 
         # Load the file as a stream
@@ -32,17 +32,17 @@ class TextReader:
             columnHints = handle.readline().strip().split("/")
             rowHints = handle.readline().strip().split("/")
         
-        # Create a grid
-        grid = Grid(len(rowHints), len(columnHints))
+        # Create a puzzle
+        puzzle = Puzzle(len(rowHints), len(columnHints))
 
         # For each rowHint, add the hints
         for rowIndex, rowHint in enumerate(rowHints):
             for hint in rowHint.split(','):
-                grid.getRowZone(rowIndex).addHint(int(hint))
+                puzzle.getRowZone(rowIndex).addHint(int(hint))
 
         # For each columnHint, add the hints
         for columnIndex, columnHint in enumerate(columnHints):
             for hint in columnHint.split(','):
-                grid.getColumnZone(columnIndex).addHint(int(hint))
+                puzzle.getColumnZone(columnIndex).addHint(int(hint))
         
-        return grid
+        return puzzle

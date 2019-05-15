@@ -8,7 +8,7 @@ The PictoCrossSolver module provides several sub modules below:
 
 | Component | Description |
 | --------- | ----------- |
-| Elements  | All elements composing the grid and puzzle |
+| Elements  | All elements composing the puzzle and puzzle |
 | Analyzers | The analyzers are used to figure out marks to touch based on hints |
 | Solvers   | The solvers are used to apply certain logic based on analyzers |
 | Readers   | The Readers load puzzles from files |

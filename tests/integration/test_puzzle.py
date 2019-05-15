@@ -1,91 +1,86 @@
-from PictoCrossSolver.Elements import Grid
-from PictoCrossSolver.Renderers import SolutionRenderer
-from PictoCrossSolver.Solvers import *
-from PictoCrossSolver.Readers import TextReader
+# from PictoCrossSolver.Engines import FirstEngine
+# from PictoCrossSolver.Renderers import SolutionRenderer
+# from PictoCrossSolver.Solvers import *
+# from PictoCrossSolver.Readers import TextPuzzleReader
 
-import os
-import re
+# import os
 
-def test_puzzle_fixtures():
-    """
-    Tests that the solving still works properly by using
-    predefined real-world scenarios.
-
-    If any solver was to change and solve the puzzles incorrectly,
-    this would allow us to know pre-emptively.
-    """
-
-    # Scan for puzzle files
-    puzzles = []
-    for root, subdirs, files in os.walk(os.path.dirname(__file__) + '/puzzles'):
-        for file in files:
-            if re.match('puzzle-.*\\.txt', file):
-                puzzles.append(root + '/' + file)
+# def test_bpc_animals_1_2():
+#     """
+#     Integration test for specific puzzle in Biggest Picture Cross - Animals - Puzzle 1,2
+#     """
     
-    # Test each puzzle
-    for puzzleFile in puzzles:
-
-        # Ensure there is a solution
-        solutionFile = puzzleFile.replace('puzzle-', 'solution-')
-        if not os.path.exists(solutionFile):
-            continue
-
-        # Report
-        print(f"Testing solution for puzzle {puzzleFile} still works")
-        
-        # Load the puzzle and solution in memory
-        grid = TextReader.load(puzzleFile)
-        with open(solutionFile, 'r') as solutionStream:
-            solution = solutionStream.readlines()
-            for index, line in enumerate(solution):
-                solution[index] = line.strip()
-        
-        # Prepare solvers
-        solvers = []
-        solvers.append(HintFitsInEstimatedZoneSolver())
-        solvers.append(CrossAmbiguousZonesInCompletedHintsSolver())
-        solvers.append(HintExpandsFilledMarksFromEdgeInEstimatedZoneSolver())
-        solvers.append(CrossMarksOutsideOfSolvedHintZonesSolver())
-
-        # Run our solvers until no change at all between two full loops
-        hasChanges = True
-        hadChanges = False
-        while hasChanges:
-            hasChanges = False
-
-            for rowIndex, rowSet in enumerate(grid.getRowZones()):
-                hadChanges = processSet("row", rowIndex, rowSet, solvers)
-                hasChanges = hasChanges or hadChanges
-
-            for columnIndex, columnSet in enumerate(grid.getColumnZones()):
-                hadChanges = processSet("column", columnIndex, columnSet, solvers)
-                hasChanges = hasChanges or hadChanges
-
-    # Get the solution representation in memory and compare with loaded solution
-    solutionRenderer = SolutionRenderer(grid)
-    liveSolution = solutionRenderer.render()
-    assert liveSolution == solution
+#     # Load the puzzle and solution in memory
+#     puzzle = TextPuzzleReader.load(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/puzzle-1-2.txt')
+#     with open(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/solution-1-2.txt', 'r') as solutionStream:
+#         solution = solutionStream.readlines()
+#         for index, line in enumerate(solution):
+#             solution[index] = line.strip()
     
+#     # Solve the puzzle
+#     puzzle = FirstEngine.solve(puzzle)
 
-def processSet(setType: str, setIndex: int, zone: Zone, solvers: list) -> bool:
+#     # Get the solution representation in memory and compare with loaded solution
+#     solutionRenderer = SolutionRenderer(puzzle)
+#     liveSolution = solutionRenderer.render()
+#     assert liveSolution == solution
 
-    # If there are no ambiguous marks left, consider complete and skip
-    if len(list((zone for zone in zone.getMarks() if zone.isAmbiguous()))) == 0:
-        return False
+# def test_bpc_animals_3_1():
+#     """
+#     Integration test for specific puzzle in Biggest Picture Cross - Animals - Puzzle 3,1
+#     """
+    
+#     # Load the puzzle and solution in memory
+#     puzzle = TextPuzzleReader.load(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/puzzle-3-1.txt')
+#     with open(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/solution-3-1.txt', 'r') as solutionStream:
+#         solution = solutionStream.readlines()
+#         for index, line in enumerate(solution):
+#             solution[index] = line.strip()
+    
+#     # Solve the puzzle
+#     puzzle = FirstEngine.solve(puzzle)
 
-    # As long as we have changes, apply the solvers again
-    hasChanges = True
-    hadChanges = False
-    while hasChanges:
-        hasChanges = False
+#     # Get the solution representation in memory and compare with loaded solution
+#     solutionRenderer = SolutionRenderer(puzzle)
+#     liveSolution = solutionRenderer.render()
+#     assert liveSolution == solution
 
-        # For each hint, find a potential set of Marks that match and then apply a list of
-        # different solvers to change the zone if applicable
-        for hintIndex, hint in enumerate(zone.getHints()):
-            
-            # Apply the solvers
-            for solver in solvers:
-                if solver.solve(zone):
-                    hasChanges = hadChanges = True
+# def test_bpc_animals_4_3():
+#     """Puzzle
+#     Integration test for specific puzzle in Biggest Picture Cross - Animals - Puzzle 4,3
+#     """
+    
+#     # Load the puzzle and solution in memory
+#     puzzle = TextPuzzleReader.load(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/puzzle-4-3.txt')
+#     with open(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/solution-4-3.txt', 'r') as solutionStream:
+#         solution = solutionStream.readlines()
+#         for index, line in enumerate(solution):
+#             solution[index] = line.strip()
+    
+#     # Solve the puzzle
+#     puzzle = FirstEngine.solve(puzzle)
 
-    return hadChanges
+#     # Get the solution representation in memory and compare with loaded solution
+#     solutionRenderer = SolutionRenderer(puzzle)
+#     liveSolution = solutionRenderer.render()
+#     assert liveSolution == solution
+
+# def test_bpc_animals_5_2():
+#     """
+#     Integration test for specific puzzle in Biggest Picture Cross - Animals - Puzzle 5,2
+#     """
+    
+#     # Load the puzzle and solution in memory
+#     puzzle = TextPuzzleReader.load(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/puzzle-5-2.txt')
+#     with open(os.path.dirname(__file__) + '/puzzles/biggest-picture-cross/animals/solution-5-2.txt', 'r') as solutionStream:
+#         solution = solutionStream.readlines()
+#         for index, line in enumerate(solution):
+#             solution[index] = line.strip()
+    
+#     # Solve the puzzle
+#     puzzle = FirstEngine.solve(puzzle)
+
+#     #Puzzle the solution representation in memory and compare with loaded solution
+#     solutionRenderer = SolutionRenderer(puzzle)
+#     liveSolution = solutionRenderer.render()
+#     assert liveSolution == solutionPuzzle

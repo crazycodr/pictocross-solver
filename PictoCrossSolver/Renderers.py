@@ -2,32 +2,32 @@ import sys
 import logging
 from typing import List
 
-from PictoCrossSolver.Elements import Grid
+from PictoCrossSolver.Elements import Puzzle
 
 class ConsoleRenderer:
     """
-    The renderers attach to a grid and allows a grid to be printed. Only a 
+    The renderers attach to a puzzle and allows a puzzle to be printed. Only a 
     ConsoleRenderer exists for now.
     """
 
-    def __init__(self, grid: Grid):
+    def __init__(self, puzzle: Puzzle):
 
-        # Save the grid for later use
-        self._grid = grid
+        # Save the puzzle for later use
+        self._puzzle = puzzle
 
         # Pre-render hints as they would never change
-        # x hints are for each row Zone or range(0, len(grid.getRowZones())
+        # x hints are for each row Zone or range(0, len(puzzle.getRowZones())
         self._rowHints = []
-        for Zone in grid.getRowZones():
+        for Zone in puzzle.getRowZones():
             self._rowHints.append(" ".join(str(hint) for hint in Zone.getHints()))
 
         # Pre-render hints as they would never change
-        # Column hints are for each line of hints or range(0, max(len(Zone.getHints) for Zone in grid.getColumnZones()))
+        # Column hints are for each line of hints or range(0, max(len(Zone.getHints) for Zone in puzzle.getColumnZones()))
         self._columnHints = []
-        maxColumnHints = max(len(Zone.getHints()) for Zone in grid.getColumnZones())
+        maxColumnHints = max(len(Zone.getHints()) for Zone in puzzle.getColumnZones())
         for columnRow in range(0, maxColumnHints):
             columnHint = ""
-            for Zone in grid.getColumnZones():
+            for Zone in puzzle.getColumnZones():
                 
                 # Only print hints that match the row, they should be printed in ascending padding like
                 # 1
@@ -55,7 +55,7 @@ class ConsoleRenderer:
     
     def render(self):
         """
-        Renders the currently attached grid to the logger
+        Renders the currently attached puzzle to the logger
         """
 
         # Render each _yHint
@@ -68,7 +68,7 @@ class ConsoleRenderer:
         # Render each _xHint and corresponding zone
         for index, hintRow in enumerate(self._rowHints):
             render = hintRow
-            zone = self._grid.getRowZone(index)
+            zone = self._puzzle.getRowZone(index)
             for mark in zone.getMarks():
                 if mark.isFilled():
                     render += " " + u'\u2588' + " "
@@ -81,26 +81,26 @@ class ConsoleRenderer:
 
 class SolutionRenderer:
     """
-    This renderer transforms a Grid into a list of strings with each
+    This renderer transforms a Puzzle into a list of strings with each
     mark represented by a single character
     """
 
-    def __init__(self, grid: Grid):
+    def __init__(self, puzzle: Puzzle):
 
-        # Save the grid for later use
-        self._grid = grid
+        # Save the puzzle for later use
+        self._puzzle = puzzle
 
     
     def render(self) -> List[str]:
         """
-        Renders the currently attached grid to the logger
+        Renders the currently attached puzzle to the logger
 
-        @param TextIOWrapper file to output the grid solution to
+        @param TextIOWrapper file to output the puzzle solution to
         """
 
         # Render each row mark by mark
         results = []
-        for rowZone in self._grid.getRowZones():
+        for rowZone in self._puzzle.getRowZones():
             rowStr = ""
             for mark in rowZone.getMarks():
                 if mark.isFilled():
