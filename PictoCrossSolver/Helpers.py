@@ -24,9 +24,8 @@ class HintPositionner:
         there or a "X" meaning nothing can go here or "?" meaning this is
         still ambiguous.
         """
-        patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0)
-        applicablePatterns = self.getApplicablePatterns(zone, patterns)
-        return self.reducePatterns(zone, applicablePatterns)
+        patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0, self.getApplicablePatternExpression(zone))
+        return self.reducePatterns(zone, patterns)
     
     def reducePatterns(self, zone: Zone, patterns: List[str]) -> []:
         """
@@ -45,9 +44,10 @@ class HintPositionner:
         self._reducedPatternCache[reducedPatternHash] = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
         return self._reducedPatternCache[reducedPatternHash]
     
-    def getApplicablePatterns(self, zone: Zone, patterns: List[str]) -> List[str]:
+    def getApplicablePatternExpression(self, zone: Zone) -> str:
         """
-        Filter the patterns that don't match the current zone's setup
+        Creates a filter pattern to be used against patterns to exclude
+        invalid patterns off the bat.
         """
         # Generate regular expression from zone status
         regularExpression = ""
@@ -58,18 +58,8 @@ class HintPositionner:
                 regularExpression += "x"
             else:
                 regularExpression += "."
-
-        # Return the cached version
-        applicablePatternHash = hash(frozenset({
-            "zonePattern": regularExpression,
-            "patterns": tuple(patterns),
-        }.items()))
-        if applicablePatternHash in self._applicablePatternCache:
-            return self._applicablePatternCache[applicablePatternHash]
-
-        # Save the results to the cache
-        self._applicablePatternCache[applicablePatternHash] = list(filter(lambda a: re.match(regularExpression, a), patterns))
-        return self._applicablePatternCache[applicablePatternHash]
+        
+        return regularExpression
     
     def patternReducer(self, a: str, b: str) -> str:
         """
@@ -108,7 +98,7 @@ class HintPositionner:
 
         return "".join(r)
         
-    def generatePatternsForHint(self, hints: List[int], space: int, hintIndex: int) -> List[str]:
+    def generatePatternsForHint(self, hints: List[int], space: int, hintIndex: int, filteringPattern: str) -> List[str]:
         """
         Used to generate all patterns for a hint and generate all subpatterns
         of following hints calling the same method in a recursive way.
@@ -145,14 +135,28 @@ class HintPositionner:
                 returns ["xx00x00x00"]
             returns ["00x00x00xx", "00x00xx00x", "00x00xxx00", "00x00xx00x", "00x00xxx00", "00x00xxx00", "x00x00x00x", "x00x00xx00", "x00x00xx00", "xx00x00x00"]
         """
-        # Return the cached version
+        # Return the cached version of all patterns
         zoneCacheHash = hash(frozenset({
             "space": space,
             "hints": tuple(hints),
             "hintIndex": hintIndex
         }.items()))
+        zoneCacheFilteredHash = hash(frozenset({
+            "space": space,
+            "hints": tuple(hints),
+            "hintIndex": hintIndex,
+            "filterPattern": filteringPattern
+        }.items()))
+        if zoneCacheFilteredHash in self._generatedPatternCache:
+            return self._generatedPatternCache[zoneCacheFilteredHash]
         if zoneCacheHash in self._generatedPatternCache:
-            return self._generatedPatternCache[zoneCacheHash]
+
+            # Filter the patterns then update the cache
+            patterns = self._generatedPatternCache[zoneCacheHash]
+            newPatterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
+            if len(patterns) != len(newPatterns):
+                self._generatedPatternCache[zoneCacheFilteredHash] = newPatterns
+            return newPatterns
 
         # Get the hint and next hints and calculate the space needed so this iteration does not push over
         hint = hints[0]
@@ -172,11 +176,18 @@ class HintPositionner:
 
             # Generate all sub patterns from it
             if len(nextHints) > 0:
-                for generatedSubPattern in self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1):
+                for generatedSubPattern in self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1, ""):
                     results.append(currentPattern + generatedSubPattern)
             else:
                 results.append(currentPattern)
-        
+
         # Cache and return unique patterns using a set
-        self._generatedPatternCache[zoneCacheHash] = list(set(results))
-        return self._generatedPatternCache[zoneCacheHash]
+        patterns = newPatterns = list(set(results))
+        self._generatedPatternCache[zoneCacheHash] = newPatterns
+        if filteringPattern != "":
+            newPatterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
+            if len(patterns) != len(newPatterns):
+                self._generatedPatternCache[zoneCacheFilteredHash] = newPatterns
+
+        # Return the patterns
+        return newPatterns

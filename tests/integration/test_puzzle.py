@@ -31,7 +31,7 @@ def test_eventDrivenEngine(puzzle: str, solution: str):
     
     # Load the puzzle and solution in memory
     puzzle = TextPuzzleReader.load(puzzle)
-    solution = TextSolutionReader.load(solution)
+    preparedSolution = TextSolutionReader.load(solution)
     
     # Solve the puzzle
     engine = EventDrivenEngine()
@@ -41,4 +41,12 @@ def test_eventDrivenEngine(puzzle: str, solution: str):
     # Get the solution representation in memory and compare with loaded solution
     solutionRenderer = SolutionRenderer(solvedPuzzle.applyChanges())
     liveSolution = solutionRenderer.render()
-    assert liveSolution == solution
+    print(f"LIVE SOLUTION: {puzzle}")
+    print("--------------------------")
+    print("\n".join(liveSolution))
+    print("--------------------------")
+    print(f"PREPARED SOLUTION: {solution}")
+    print("--------------------------")
+    print("\n".join(preparedSolution))
+    print("--------------------------")
+    assert liveSolution == preparedSolution

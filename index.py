@@ -26,7 +26,7 @@ changesLoggingHandler.setLevel(logging.DEBUG)
 changesLogger.addHandler(changesLoggingHandler)
 
 # Load the puzzle from file
-puzzle = TextPuzzleReader.load("tests/integration/puzzles/books/sport-cerebral/logimage/103/puzzle-48.txt")
+puzzle = TextPuzzleReader.load("tests/integration/puzzles/biggest-picture-cross/animals/puzzle-3-1.txt")
 
 # Change applied watcher
 def changeAppliedWatcher(puzzle: Puzzle, strategy: Strategy):
