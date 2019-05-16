@@ -5,8 +5,12 @@ from PictoCrossSolver.Elements import Puzzle, PuzzleChange, Zone
 
 class HintPositionner:
 
-    @staticmethod
-    def position(zone: Zone) -> []:
+    def __init__(self):
+        self._generatedPatternCache = {}
+        self._applicablePatternCache = {}
+        self._reducedPatternCache = {}
+    
+    def position(self, zone: Zone) -> []:
         """
         Positions the hints using a forward generation algorithm
         that create all potential positions for each hint using the zone.
@@ -20,24 +24,54 @@ class HintPositionner:
         there or a "X" meaning nothing can go here or "?" meaning this is
         still ambiguous.
         """
-        # Get the patterns for this zone
-        patterns = HintPositionner.generatePatternsForHint(zone, 0, "")
+        patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0)
+        applicablePatterns = self.getApplicablePatterns(zone, patterns)
+        return self.reducePatterns(zone, applicablePatterns)
+    
+    def reducePatterns(self, zone: Zone, patterns: List[str]) -> []:
+        """
+        Reduce the patterns to a single pattern and return the final pattern as a list
+        """
+        # Return the cached version
+        reducedPatternHash = hash(frozenset({
+            "size": len(zone.getMarks()),
+            "hints": tuple(zone.getHints()),
+            "patterns": tuple(patterns)
+        }.items()))
+        if reducedPatternHash in self._reducedPatternCache:
+            return self._reducedPatternCache[reducedPatternHash]
 
-        # Filter the patterns that don't match the current zone's setup
+        # Save the results to the cache
+        self._reducedPatternCache[reducedPatternHash] = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
+        return self._reducedPatternCache[reducedPatternHash]
+    
+    def getApplicablePatterns(self, zone: Zone, patterns: List[str]) -> List[str]:
+        """
+        Filter the patterns that don't match the current zone's setup
+        """
+        # Generate regular expression from zone status
         regularExpression = ""
         for mark in zone.getMarks():
             if mark.isFilled():
-                regularExpression += "\d"
+                regularExpression += "[0-9]"
             elif mark.isCrossed():
                 regularExpression += "x"
             else:
                 regularExpression += "."
-        patterns = list(filter(lambda a: re.match(regularExpression, a), patterns))
 
-        # Reduce the patterns to a single pattern and return the final pattern as a list
-        return list(reduce(HintPositionner.patternReducer, patterns, "*" * len(zone.getMarks())))
+        # Return the cached version
+        applicablePatternHash = hash(frozenset({
+            "zonePattern": regularExpression,
+            "patterns": tuple(patterns),
+        }.items()))
+        if applicablePatternHash in self._applicablePatternCache:
+            return self._applicablePatternCache[applicablePatternHash]
+
+        # Save the results to the cache
+        self._applicablePatternCache[applicablePatternHash] = list(filter(lambda a: re.match(regularExpression, a), patterns))
+        return self._applicablePatternCache[applicablePatternHash]
     
-    def patternReducer(a: str, b: str) -> str:
+    def patternReducer(self, a: str, b: str) -> str:
         """
         Reduces pattern a and pattern b into one final pattern.
         Each letter in the pattern is compared with the letter of the other pattern to 
@@ -74,9 +108,7 @@ class HintPositionner:
 
         return "".join(r)
         
-
-    @staticmethod
-    def generatePatternsForHint(zone: Zone, hintIndex: int, onPattern: str) -> List[str]:
+    def generatePatternsForHint(self, hints: List[int], space: int, hintIndex: int) -> List[str]:
         """
         Used to generate all patterns for a hint and generate all subpatterns
         of following hints calling the same method in a recursive way.
@@ -113,17 +145,20 @@ class HintPositionner:
                 returns ["xx00x00x00"]
             returns ["00x00x00xx", "00x00xx00x", "00x00xxx00", "00x00xx00x", "00x00xxx00", "00x00xxx00", "x00x00x00x", "x00x00xx00", "x00x00xx00", "xx00x00x00"]
         """
-        # Get the number of the space available and taken
-        space = len(zone.getMarks())
-        spaceTaken = len(onPattern)
-        hint = zone.getHints()[hintIndex]
+        # Return the cached version
+        zoneCacheHash = hash(frozenset({
+            "space": space,
+            "hints": tuple(hints),
+            "hintIndex": hintIndex
+        }.items()))
+        if zoneCacheHash in self._generatedPatternCache:
+            return self._generatedPatternCache[zoneCacheHash]
 
-        # Get the next hints and calculate the space needed so this iteration does over push
-        nextHints = zone.getHints()[slice(hintIndex + 1, len(zone.getHints()))]
-        nextHintsNeed = max(0, reduce(lambda a, b: a + 1 + b, nextHints, 0) - 1)
-
-        # Get the space this iteration can use to produce different patterns
-        spaceAvailable = space - spaceTaken - nextHintsNeed
+        # Get the hint and next hints and calculate the space needed so this iteration does not push over
+        hint = hints[0]
+        nextHints = hints[slice(1, len(hints))]
+        nextHintSpace = max(0, reduce(lambda a, b: a + 1 + b, nextHints, 0) - 1)
+        spaceAvailable = space - nextHintSpace
         spaceNeeded = hint + (1 if len(nextHints) > 0 else 0)
 
         # Generate the current patterns
@@ -131,17 +166,17 @@ class HintPositionner:
         for spacers in range(0, spaceAvailable - spaceNeeded + 1):
 
             # Create the current pattern
-            currentPattern = onPattern
-            currentPattern += "x" * spacers
+            currentPattern = "x" * spacers
             currentPattern += str(hintIndex) * hint
             currentPattern += "x" if len(nextHints) > 0 else "x" * (spaceAvailable - spaceNeeded - spacers)
 
             # Generate all sub patterns from it
             if len(nextHints) > 0:
-                for generatedSubPattern in HintPositionner.generatePatternsForHint(zone, hintIndex + 1, currentPattern):
-                    results.append(generatedSubPattern)
+                for generatedSubPattern in self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1):
+                    results.append(currentPattern + generatedSubPattern)
             else:
                 results.append(currentPattern)
         
-        # Return unique patterns using a set
-        return list(set(results))
+        # Cache and return unique patterns using a set
+        self._generatedPatternCache[zoneCacheHash] = list(set(results))
+        return self._generatedPatternCache[zoneCacheHash]

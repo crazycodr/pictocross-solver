@@ -1,4 +1,5 @@
 from typing import List
+import logging
 import re
 from PictoCrossSolver.Elements import Mark, ZoneType, Zone, Puzzle, PuzzleChange, PuzzleChangeAction
 from PictoCrossSolver.Helpers import HintPositionner
@@ -15,6 +16,9 @@ class ChangeUsingHintPositionner(Strategy):
     hint setup vs mark status. Uses the HintPositionner helper to figure out where
     each hint can be set without a doubt.
     """
+
+    def __init__(self):
+        self._hintPositioner = HintPositionner()
     
     def apply(self, puzzle: Puzzle) -> List[PuzzleChange]:
         """
@@ -24,8 +28,14 @@ class ChangeUsingHintPositionner(Strategy):
 
         # Gather the changes
         for zoneIndex, zone in enumerate(puzzle.getRowZones()):
+            if zone.isComplete():
+                continue
+            logging.debug(f'Processing row {zoneIndex}')
             changes += self.applyOnZone(ZoneType.ROW, zone, zoneIndex)
         for zoneIndex, zone in enumerate(puzzle.getColumnZones()):
+            if zone.isComplete():
+                continue
+            logging.debug(f'Processing column {zoneIndex}')
             changes += self.applyOnZone(ZoneType.COLUMN, zone, zoneIndex)
         
         # Return the changes
@@ -45,7 +55,7 @@ class ChangeUsingHintPositionner(Strategy):
         # Prepare the indexes to fill and indexes to cross
         indexesToFill = []
         indexesToCross = []
-        hintPositions = HintPositionner.position(zone)
+        hintPositions = self._hintPositioner.position(zone)
         for markIndex, hintPosition in enumerate(hintPositions):
 
             # If the hintPosition is a number and corresponding mark is ambiguous, add to indexesToFill

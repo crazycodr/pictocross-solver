@@ -114,6 +114,7 @@ class EventDrivenEngine:
         # Notify usage of strategy and exist if False
         if self._onApplyStrategy and not self._onApplyStrategy(puzzle, strategy):
             return []
+        logging.debug(f'Applying strategy {strategy.__class__}')
 
         # Apply strategy and validate the changes
         acceptedChanges = []

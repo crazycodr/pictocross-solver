@@ -14,7 +14,10 @@ def getPuzzlesAndSolutions() -> []:
     for root, subdirs, files in os.walk(os.path.dirname(__file__) + '/puzzles'):
         for file in files:
             if re.match('puzzle-.*\\.txt', file):
-                solution = 'solution-' + re.search('puzzle-(?P<puzzle>\d+-\d+)\.txt', file).groupdict()['puzzle'] + '.txt'
+                matches = re.search('puzzle-(?P<puzzle>\d+-\d+)\.txt', file)
+                if matches == None:
+                    continue
+                solution = 'solution-' + matches.groupdict()['puzzle'] + '.txt'
                 if os.path.exists(root + '/' + solution):
                     testablePuzzles.append((root + '/' + file, root + '/' + solution))
     

@@ -1,4 +1,5 @@
 from typing import List
+from functools import reduce
 from enum import Enum
 
 
@@ -95,7 +96,6 @@ class Zone:
 
         @param int hint to add
         """
-        
         self._hints.append(hint)
     
     def getHints(self) -> List[int]:
@@ -104,7 +104,6 @@ class Zone:
 
         @return List[int]
         """
-        
         return self._hints
     
     def addMark(self, mark: Mark):
@@ -113,7 +112,6 @@ class Zone:
 
         @param Mark mark to add to the zone
         """
-        
         self._marks.append(mark)
     
     def getMark(self, index: int) -> Mark:
@@ -124,7 +122,6 @@ class Zone:
 
         @return Mark
         """
-
         return self._marks[index]
     
     def getMarks(self) -> List[Mark]:
@@ -133,8 +130,15 @@ class Zone:
 
         @return List[Mark]
         """
-
         return self._marks
+    
+    def isComplete(self) -> bool:
+        """
+        Checks if all marks are filled or crossed.
+
+        @return bool
+        """
+        return reduce(lambda a, b: a and b, map(lambda a: not a.isAmbiguous(), self.getMarks()), True)
 
 
 class PuzzleChangeAction(Enum):
