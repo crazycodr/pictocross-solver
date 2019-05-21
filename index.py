@@ -8,6 +8,8 @@ from PictoCrossSolver.Engines import EventDrivenEngine
 from PictoCrossSolver.Renderers import ConsoleRenderer
 from PictoCrossSolver.Elements import Puzzle, PuzzleChange
 from PictoCrossSolver.Strategies import Strategy, ChangeUsingHintPositionner
+from PictoCrossSolver.Helpers import HintPositionner
+from PictoCrossSolver.Caches import FileCache, MemoryCache, CacheChain
 
 # Setup standard logging
 logger = logging.getLogger()
@@ -26,7 +28,7 @@ changesLoggingHandler.setLevel(logging.DEBUG)
 changesLogger.addHandler(changesLoggingHandler)
 
 # Load the puzzle from file
-puzzle = TextPuzzleReader.load("tests/integration/puzzles/biggest-picture-cross/animals/puzzle-3-1.txt")
+puzzle = TextPuzzleReader.load("tests/integration/puzzles/books/sport-cerebral/logimage/103/puzzle-43.txt")
 
 # Change applied watcher
 def changeAppliedWatcher(puzzle: Puzzle, strategy: Strategy):
@@ -35,7 +37,10 @@ def changeAppliedWatcher(puzzle: Puzzle, strategy: Strategy):
 
 # Prepare the engine and ask it to solve the puzzle
 engine = EventDrivenEngine()
-engine.addStrategy(ChangeUsingHintPositionner())
+cacheChain = CacheChain()
+cacheChain.addCache(MemoryCache())
+cacheChain.addCache(FileCache(os.path.dirname(__file__) + '/cache'))
+engine.addStrategy(ChangeUsingHintPositionner(HintPositionner(cacheChain)))
 engine.onChangesApplied(changeAppliedWatcher)
 solvedPuzzle = engine.solve(puzzle)
 

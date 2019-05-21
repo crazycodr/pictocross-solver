@@ -6,6 +6,7 @@ authors = ["Mathieu Dumoulin <thecrazycodr@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.6"
+redis = "^3.2"
 
 [tool.poetry.dev-dependencies]
 pytest = "^4.4"

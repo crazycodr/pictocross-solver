@@ -2,13 +2,18 @@ from typing import List
 from functools import reduce
 import re
 from PictoCrossSolver.Elements import Puzzle, PuzzleChange, Zone
+from PictoCrossSolver.Caches import Cache
+import hashlib
+import logging
+from json import JSONDecodeError
 
 class HintPositionner:
 
-    def __init__(self):
+    def __init__(self, cacheEngine: Cache):
         self._generatedPatternCache = {}
         self._applicablePatternCache = {}
         self._reducedPatternCache = {}
+        self._cacheEngine = cacheEngine
     
     def position(self, zone: Zone) -> []:
         """
@@ -25,24 +30,23 @@ class HintPositionner:
         still ambiguous.
         """
         patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0, self.getApplicablePatternExpression(zone))
-        return self.reducePatterns(zone, patterns)
+        return self.reducePatterns(zone, patterns, self.getApplicablePatternExpression(zone))
     
-    def reducePatterns(self, zone: Zone, patterns: List[str]) -> []:
+    def reducePatterns(self, zone: Zone, patterns: List[str], filteringPattern: str) -> []:
         """
         Reduce the patterns to a single pattern and return the final pattern as a list
         """
         # Return the cached version
-        reducedPatternHash = hash(frozenset({
-            "size": len(zone.getMarks()),
-            "hints": tuple(zone.getHints()),
-            "patterns": tuple(patterns)
-        }.items()))
-        if reducedPatternHash in self._reducedPatternCache:
-            return self._reducedPatternCache[reducedPatternHash]
+        reducedPatternHash = hash((len(zone.getMarks()), tuple(zone.getHints()), tuple(self.hashString(filteringPattern))))
+        if self._cacheEngine.hasKey(reducedPatternHash):
+            return self._cacheEngine.retrieve(reducedPatternHash)
 
         # Save the results to the cache
-        self._reducedPatternCache[reducedPatternHash] = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
-        return self._reducedPatternCache[reducedPatternHash]
+        logging.debug(f'Reducing {len(patterns):,d} patterns into 1 pattern')
+        reducedPattern = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
+        logging.debug(f'Saving reduced pattern')
+        self._cacheEngine.save(reducedPatternHash, reducedPattern)
+        return self._cacheEngine.retrieve(reducedPatternHash)
     
     def getApplicablePatternExpression(self, zone: Zone) -> str:
         """
@@ -53,7 +57,7 @@ class HintPositionner:
         regularExpression = ""
         for mark in zone.getMarks():
             if mark.isFilled():
-                regularExpression += "[0-9]"
+                regularExpression += "[0-9A-F]"
             elif mark.isCrossed():
                 regularExpression += "x"
             else:
@@ -72,6 +76,11 @@ class HintPositionner:
         Same vs Same = Same (Same here can be a number, X, ? or *)
         Diff vs Diff = ? (Different chars yield ambiguity except if one of the char is *)
         """
+        if a == "?" * len(a):
+            return a
+        if b == "?" * len(b):
+            return b
+            
         r = list("*" * len(a))
         for charIndex in range(0, len(a)):
 
@@ -136,58 +145,95 @@ class HintPositionner:
             returns ["00x00x00xx", "00x00xx00x", "00x00xxx00", "00x00xx00x", "00x00xxx00", "00x00xxx00", "x00x00x00x", "x00x00xx00", "x00x00xx00", "xx00x00x00"]
         """
         # Return the cached version of all patterns
-        zoneCacheHash = hash(frozenset({
-            "space": space,
-            "hints": tuple(hints),
-            "hintIndex": hintIndex
-        }.items()))
-        zoneCacheFilteredHash = hash(frozenset({
-            "space": space,
-            "hints": tuple(hints),
-            "hintIndex": hintIndex,
-            "filterPattern": filteringPattern
-        }.items()))
-        if zoneCacheFilteredHash in self._generatedPatternCache:
-            return self._generatedPatternCache[zoneCacheFilteredHash]
-        if zoneCacheHash in self._generatedPatternCache:
+        zoneCacheHash = hash((space, tuple(hints), hintIndex))
+        zoneCacheHashWithFilter = hash((space, tuple(hints), hintIndex, tuple(self.hashString(filteringPattern))))
 
-            # Filter the patterns then update the cache
-            patterns = self._generatedPatternCache[zoneCacheHash]
-            newPatterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
-            if len(patterns) != len(newPatterns):
-                self._generatedPatternCache[zoneCacheFilteredHash] = newPatterns
-            return newPatterns
+        # Load from filtered cache but catch errors in case file has issues
+        patterns = []
+        if self._cacheEngine.hasKey(zoneCacheHashWithFilter):
+            try:
+                patterns = self._cacheEngine.retrieve(zoneCacheHashWithFilter)
+                if len(hints) > 4 or hintIndex == 0:
+                    logging.debug(f'Loaded {len(patterns):,d} from filtered cache for {hints} with {space} spaces for hintIndex {hintIndex}')
+            except JSONDecodeError:
+                logging.debug(f'Failed to load patterns from filtered cache file, file is corrupt')
+                patterns = []
 
-        # Get the hint and next hints and calculate the space needed so this iteration does not push over
-        hint = hints[0]
-        nextHints = hints[slice(1, len(hints))]
-        nextHintSpace = max(0, reduce(lambda a, b: a + 1 + b, nextHints, 0) - 1)
-        spaceAvailable = space - nextHintSpace
-        spaceNeeded = hint + (1 if len(nextHints) > 0 else 0)
+        # If no patterns, load from unfiltered cache
+        # Load from cache but catch errors in case file has issues
+        if len(patterns) == 0 and self._cacheEngine.hasKey(zoneCacheHash):
+            try:
+                patterns = self._cacheEngine.retrieve(zoneCacheHash)
+                if len(hints) > 4 or hintIndex == 0:
+                    logging.debug(f'Loaded {len(patterns):,d} from cache for {hints} with {space} spaces for hintIndex {hintIndex}')
+            except JSONDecodeError:
+                logging.debug(f'Failed to load patterns from file, file is corrupt')
+                patterns = []
+        
+        # If no patterns, generate them
+        if len(patterns) == 0:
 
-        # Generate the current patterns
-        results = []
-        for spacers in range(0, spaceAvailable - spaceNeeded + 1):
+            if len(hints) > 4 or hintIndex == 0:
+                logging.debug(f'Generating patterns for {hints} with {space} spaces for hintIndex {hintIndex}')
 
-            # Create the current pattern
-            currentPattern = "x" * spacers
-            currentPattern += str(hintIndex) * hint
-            currentPattern += "x" if len(nextHints) > 0 else "x" * (spaceAvailable - spaceNeeded - spacers)
+            # Get the hint and next hints and calculate the space needed so this iteration does not push over
+            hint = hints[0]
+            nextHints = hints[slice(1, len(hints))]
+            nextHintSpace = max(0, reduce(lambda a, b: a + 1 + b, nextHints, 0) - 1)
+            spaceAvailable = space - nextHintSpace
+            spaceNeeded = hint + (1 if len(nextHints) > 0 else 0)
 
-            # Generate all sub patterns from it
-            if len(nextHints) > 0:
-                for generatedSubPattern in self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1, ""):
-                    results.append(currentPattern + generatedSubPattern)
-            else:
-                results.append(currentPattern)
+            # Generate the current patterns
+            results = []
+            spacers = range(0, spaceAvailable - spaceNeeded + 1)
+            for spaces in spacers:
 
-        # Cache and return unique patterns using a set
-        patterns = newPatterns = list(set(results))
-        self._generatedPatternCache[zoneCacheHash] = newPatterns
-        if filteringPattern != "":
-            newPatterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
-            if len(patterns) != len(newPatterns):
-                self._generatedPatternCache[zoneCacheFilteredHash] = newPatterns
+                # Create the current pattern
+                currentPattern = "x" * spaces
+                currentPattern += (hex(hintIndex).replace('0x', '').upper()) * hint
+                currentPattern += "x" if len(nextHints) > 0 else "x" * (spaceAvailable - spaceNeeded - spaces)
 
+                # Report progress
+                if len(hints) > 4 or hintIndex == 0:
+                    logging.debug(f"Loop {spaces}/{spacers.stop}")
+
+                # Generate all sub patterns from it
+                if len(nextHints) > 0:
+                    subpatterns = self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1, "")
+                    for generatedSubPattern in subpatterns:
+                        results.append(currentPattern + generatedSubPattern)
+                else:
+                    results.append(currentPattern)
+
+            # Cache unique patterns using a set
+            patterns = list(set(results))
+
+            # Cache only we are at hintIndex 0 or if we have at least 4 levels of hint to generate, 
+            # we do not want to cache all permutations of all hints and spaces, it generates
+            # way too much data that is probably not reusable that much
+            if len(hints) > 4 or hintIndex == 0:
+                logging.debug(f'Saving {len(patterns):,d} patterns to cache')
+                self._cacheEngine.save(zoneCacheHash, patterns)
+
+        # Filter the patterns and return
+        if filteringPattern != "" and filteringPattern != "." * space:
+            if len(hints) > 4 or hintIndex == 0:
+                logging.debug(f'Filtering {len(patterns):,d} patterns using {filteringPattern}')
+            patterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
+
+            # Cache only we are at hintIndex 0 or if we have at least 4 levels of hint to generate, 
+            # we do not want to cache all permutations of all hints and spaces, it generates
+            # way too much data that is probably not reusable that much
+            if len(hints) > 4 or hintIndex == 0:
+                logging.debug(f'Saving {len(patterns):,d} patterns to filtered cache')
+                self._cacheEngine.save(zoneCacheHashWithFilter, patterns)
+        
         # Return the patterns
-        return newPatterns
+        if len(hints) > 4 or hintIndex == 0:
+            logging.debug(f'Generated {len(patterns):,d} patterns')
+        return patterns
+    
+    def hashString(self, data: str) -> bytes:
+        hasher = hashlib.sha256()
+        hasher.update(bytes(data, 'utf-8'))
+        return hasher.digest()

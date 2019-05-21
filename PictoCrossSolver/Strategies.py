@@ -17,8 +17,8 @@ class ChangeUsingHintPositionner(Strategy):
     each hint can be set without a doubt.
     """
 
-    def __init__(self):
-        self._hintPositioner = HintPositionner()
+    def __init__(self, hintPositionner: HintPositionner):
+        self._hintPositioner = hintPositionner
     
     def apply(self, puzzle: Puzzle) -> List[PuzzleChange]:
         """
