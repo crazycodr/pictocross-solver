@@ -10,7 +10,7 @@ def test_generatePatternsForHint_scenario1():
     Single full zone hint returns single pattern
     """
 
-    assert HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([10], 10, 0, "") == ["0000000000"]
+    assert HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([10], 10, 0, Zone(ZoneType.ROW, 0)) == ["0000000000"]
 
 def test_generatePatternsForHint_scenario2():
     """
@@ -19,7 +19,7 @@ def test_generatePatternsForHint_scenario2():
     Single partial zone hint returns multiple patterns
     """
 
-    assert set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([8], 10, 0, "")) == set(["00000000xx", "x00000000x", "xx00000000"])
+    assert set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([8], 10, 0, Zone(ZoneType.ROW, 0))) == set(["00000000xx", "x00000000x", "xx00000000"])
 
 def test_generatePatternsForHint_scenario3():
     """
@@ -28,7 +28,7 @@ def test_generatePatternsForHint_scenario3():
     Multi full zone hint returns single pattern
     """
 
-    assert set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([3, 3, 2], 10, 0, "")) == set(["000x111x22"])
+    assert set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([3, 3, 2], 10, 0, Zone(ZoneType.ROW, 0))) == set(["000x111x22"])
 
 def test_generatePatternsForHint_scenario4():
     """
@@ -37,7 +37,7 @@ def test_generatePatternsForHint_scenario4():
     Multi partial zone hint returns multiple patterns
     """
 
-    results = set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([2,2,2], 10, 0, ""))
+    results = set(HintPositionner(MemoryCache(), MemoryCache()).generatePatternsForHint([2,2,2], 10, 0, Zone(ZoneType.ROW, 0)))
     assert results == set(["00x11x22xx", "00x11xx22x", "00x11xxx22", "00xx11x22x", "00xx11xx22", "00xxx11x22", "x00x11x22x", "x00x11xx22", "x00xx11x22", "xx00x11x22"])
 
 def test_patternReducer():

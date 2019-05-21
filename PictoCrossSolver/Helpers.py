@@ -1,7 +1,7 @@
 from typing import List
 from functools import reduce
 import re
-from PictoCrossSolver.Elements import Puzzle, PuzzleChange, Zone
+from PictoCrossSolver.Elements import Puzzle, PuzzleChange, ZoneType, Zone
 from PictoCrossSolver.Caches import Cache
 import hashlib
 import logging
@@ -15,6 +15,7 @@ class HintPositionner:
         self._reducedPatternCache = {}
         self._persistentCache = persistentCache
         self._volatileCache = volatileCache
+        self._reductionFullPattern = None
     
     def position(self, zone: Zone) -> []:
         """
@@ -30,24 +31,26 @@ class HintPositionner:
         there or a "X" meaning nothing can go here or "?" meaning this is
         still ambiguous.
         """
-        patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0, self.getApplicablePatternExpression(zone))
-        return self.reducePatterns(zone, patterns, self.getApplicablePatternExpression(zone))
+        patterns = self.generatePatternsForHint(zone.getHints(), len(zone.getMarks()), 0, zone)
+        return self.reducePatterns(zone, patterns)
     
-    def reducePatterns(self, zone: Zone, patterns: List[str], filteringPattern: str) -> []:
+    def reducePatterns(self, zone: Zone, patterns: List[str]) -> []:
         """
         Reduce the patterns to a single pattern and return the final pattern as a list
         """
         # Return the cached version
-        reducedPatternHash = hash((len(zone.getMarks()), tuple(zone.getHints()), tuple(self.hashString(filteringPattern))))
-        if self._persistentCache.hasKey(reducedPatternHash):
-            return self._persistentCache.retrieve(reducedPatternHash)
+        reducedPatternHash = hash((zone.getZoneType().value, zone.getZoneIndex(), tuple(self.hashString(self.getApplicablePatternExpression(zone)))))
+        if self._volatileCache.hasKey(reducedPatternHash):
+            return self._volatileCache.retrieve(reducedPatternHash)
 
-        # Save the results to the cache
+        # Generate the reduced pattern
+        self._reductionFullPattern = "?" * len(zone.getMarks())
         logging.debug(f'Reducing {len(patterns):,d} patterns into 1 pattern')
         reducedPattern = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
-        logging.debug(f'Saving reduced pattern')
-        self._persistentCache.save(reducedPatternHash, reducedPattern)
-        return self._persistentCache.retrieve(reducedPatternHash)
+        
+        # Save the results to the cache
+        self._volatileCache.save(reducedPatternHash, reducedPattern)
+        return self._volatileCache.retrieve(reducedPatternHash)
     
     def getApplicablePatternExpression(self, zone: Zone) -> str:
         """
@@ -77,10 +80,8 @@ class HintPositionner:
         Same vs Same = Same (Same here can be a number, X, ? or *)
         Diff vs Diff = ? (Different chars yield ambiguity except if one of the char is *)
         """
-        if a == "?" * len(a):
-            return a
-        if b == "?" * len(b):
-            return b
+        if a == self._reductionFullPattern or b == self._reductionFullPattern:
+            return self._reductionFullPattern
             
         r = list("*" * len(a))
         for charIndex in range(0, len(a)):
@@ -108,7 +109,7 @@ class HintPositionner:
 
         return "".join(r)
         
-    def generatePatternsForHint(self, hints: List[int], space: int, hintIndex: int, filteringPattern: str) -> List[str]:
+    def generatePatternsForHint(self, hints: List[int], space: int, hintIndex: int, zone: Zone) -> List[str]:
         """
         Used to generate all patterns for a hint and generate all subpatterns
         of following hints calling the same method in a recursive way.
@@ -145,21 +146,20 @@ class HintPositionner:
                 returns ["xx00x00x00"]
             returns ["00x00x00xx", "00x00xx00x", "00x00xxx00", "00x00xx00x", "00x00xxx00", "00x00xxx00", "x00x00x00x", "x00x00xx00", "x00x00xx00", "xx00x00x00"]
         """
+        # Prepare the filtering pattern
+        filteringPattern = self.getApplicablePatternExpression(zone)
+
         # Return the cached version of all patterns
         zoneCacheHash = hash((space, tuple(hints), hintIndex))
-        lastZoneCacheHash = hash((space, tuple(hints), hintIndex))
-        zoneCacheHashWithFilter = hash((space, tuple(hints), hintIndex, tuple(self.hashString(filteringPattern))))
+        lastZoneCacheHash = hash((zone.getZoneType().value, zone.getZoneIndex(), tuple(self.hashString('filters'))))
 
-        # Load from filtered cache but catch errors in case file has issues
+        # Load from volative cache which contains the latest patterns filtered and saved in memory
+        # Those patterns are kept for specific zone indexes and types so that nothing can collide
         patterns = []
-        if self._persistentCache.hasKey(zoneCacheHashWithFilter):
-            try:
-                patterns = self._persistentCache.retrieve(zoneCacheHashWithFilter)
-                if len(hints) > 4 or hintIndex == 0:
-                    logging.debug(f'Loaded {len(patterns):,d} from filtered cache for {hints} with {space} spaces for hintIndex {hintIndex}')
-            except JSONDecodeError:
-                logging.debug(f'Failed to load patterns from filtered cache file, file is corrupt')
-                patterns = []
+        if hintIndex == 0 and self._volatileCache.hasKey(lastZoneCacheHash):
+            patterns = self._volatileCache.retrieve(lastZoneCacheHash)
+            if len(hints) > 4 or hintIndex == 0:
+                logging.debug(f'Loaded {len(patterns):,d} patterns from volatile cache for {hints} with {space} spaces for hintIndex {hintIndex}')
 
         # If no patterns, load from unfiltered cache
         # Load from cache but catch errors in case file has issues
@@ -201,7 +201,7 @@ class HintPositionner:
 
                 # Generate all sub patterns from it
                 if len(nextHints) > 0:
-                    subpatterns = self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1, "")
+                    subpatterns = self.generatePatternsForHint(nextHints, space - len(currentPattern), hintIndex + 1, zone)
                     for generatedSubPattern in subpatterns:
                         results.append(currentPattern + generatedSubPattern)
                 else:
@@ -218,17 +218,11 @@ class HintPositionner:
                 self._persistentCache.save(zoneCacheHash, patterns)
 
         # Filter the patterns and return
-        if filteringPattern != "" and filteringPattern != "." * space:
-            if len(hints) > 4 or hintIndex == 0:
-                logging.debug(f'Filtering {len(patterns):,d} patterns using {filteringPattern}')
+        if hintIndex == 0 and filteringPattern != "" and filteringPattern != "." * space:
+            logging.debug(f'Filtering {len(patterns):,d} patterns using {filteringPattern}')
             patterns = list(filter(lambda a: re.match(filteringPattern, a), patterns))
-
-            # Cache only we are at hintIndex 0 or if we have at least 4 levels of hint to generate, 
-            # we do not want to cache all permutations of all hints and spaces, it generates
-            # way too much data that is probably not reusable that much
-            if len(hints) > 4 or hintIndex == 0:
-                logging.debug(f'Saving {len(patterns):,d} patterns to filtered cache')
-                self._persistentCache.save(zoneCacheHashWithFilter, patterns)
+            logging.debug(f'Saving {len(patterns):,d} patterns to volatile cache')
+            self._volatileCache.save(lastZoneCacheHash, patterns)
         
         # Return the patterns
         if len(hints) > 4 or hintIndex == 0:

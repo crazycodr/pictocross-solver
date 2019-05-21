@@ -92,6 +92,22 @@ class Zone:
         self._zoneType = zoneType
         self._zoneIndex = zoneIndex
     
+    def getZoneType(self) -> ZoneType:
+        """
+        Returns the zone type of the zone
+
+        @return ZoneType
+        """
+        return self._zoneType
+    
+    def getZoneIndex(self) -> int:
+        """
+        Returns the zone index of the zone
+
+        @return int
+        """
+        return self._zoneIndex
+    
     def addHint(self, hint: int):
         """
         Adds a hint to the Zone
