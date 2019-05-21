@@ -86,9 +86,11 @@ class Zone:
     Solvers will mostly work off a zone.
     """
 
-    def __init__(self):
+    def __init__(self, zoneType: ZoneType, zoneIndex: int):
         self._marks = []
         self._hints = []
+        self._zoneType = zoneType
+        self._zoneIndex = zoneIndex
     
     def addHint(self, hint: int):
         """
@@ -197,10 +199,10 @@ class Puzzle:
 
         # Fill the zones
         for x in range(0, rows):
-            self._rowZones.append(Zone())
+            self._rowZones.append(Zone(ZoneType.ROW, x))
 
         for y in range(0, columns):
-            self._columnZones.append(Zone())
+            self._columnZones.append(Zone(ZoneType.COLUMN, y))
         
         # Fill the marks
         for x in range(0, rows):

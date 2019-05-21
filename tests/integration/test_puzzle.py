@@ -4,6 +4,8 @@ from PictoCrossSolver.Engines import EventDrivenEngine
 from PictoCrossSolver.Renderers import SolutionRenderer
 from PictoCrossSolver.Readers import TextPuzzleReader, TextSolutionReader
 from PictoCrossSolver.Strategies import ChangeUsingHintPositionner
+from PictoCrossSolver.Helpers import HintPositionner
+from PictoCrossSolver.Caches import MemoryCache
 
 import os
 
@@ -35,7 +37,7 @@ def test_eventDrivenEngine(puzzle: str, solution: str):
     
     # Solve the puzzle
     engine = EventDrivenEngine()
-    engine.addStrategy(ChangeUsingHintPositionner())
+    engine.addStrategy(ChangeUsingHintPositionner(HintPositionner(MemoryCache(), MemoryCache())))
     solvedPuzzle = engine.solve(puzzle)
 
     # Get the solution representation in memory and compare with loaded solution

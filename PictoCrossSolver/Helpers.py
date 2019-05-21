@@ -9,11 +9,12 @@ from json import JSONDecodeError
 
 class HintPositionner:
 
-    def __init__(self, cacheEngine: Cache):
+    def __init__(self, persistentCache: Cache, volatileCache: Cache):
         self._generatedPatternCache = {}
         self._applicablePatternCache = {}
         self._reducedPatternCache = {}
-        self._cacheEngine = cacheEngine
+        self._persistentCache = persistentCache
+        self._volatileCache = volatileCache
     
     def position(self, zone: Zone) -> []:
         """
@@ -38,15 +39,15 @@ class HintPositionner:
         """
         # Return the cached version
         reducedPatternHash = hash((len(zone.getMarks()), tuple(zone.getHints()), tuple(self.hashString(filteringPattern))))
-        if self._cacheEngine.hasKey(reducedPatternHash):
-            return self._cacheEngine.retrieve(reducedPatternHash)
+        if self._persistentCache.hasKey(reducedPatternHash):
+            return self._persistentCache.retrieve(reducedPatternHash)
 
         # Save the results to the cache
         logging.debug(f'Reducing {len(patterns):,d} patterns into 1 pattern')
         reducedPattern = list(reduce(self.patternReducer, patterns, "*" * len(zone.getMarks())))
         logging.debug(f'Saving reduced pattern')
-        self._cacheEngine.save(reducedPatternHash, reducedPattern)
-        return self._cacheEngine.retrieve(reducedPatternHash)
+        self._persistentCache.save(reducedPatternHash, reducedPattern)
+        return self._persistentCache.retrieve(reducedPatternHash)
     
     def getApplicablePatternExpression(self, zone: Zone) -> str:
         """
@@ -146,13 +147,14 @@ class HintPositionner:
         """
         # Return the cached version of all patterns
         zoneCacheHash = hash((space, tuple(hints), hintIndex))
+        lastZoneCacheHash = hash((space, tuple(hints), hintIndex))
         zoneCacheHashWithFilter = hash((space, tuple(hints), hintIndex, tuple(self.hashString(filteringPattern))))
 
         # Load from filtered cache but catch errors in case file has issues
         patterns = []
-        if self._cacheEngine.hasKey(zoneCacheHashWithFilter):
+        if self._persistentCache.hasKey(zoneCacheHashWithFilter):
             try:
-                patterns = self._cacheEngine.retrieve(zoneCacheHashWithFilter)
+                patterns = self._persistentCache.retrieve(zoneCacheHashWithFilter)
                 if len(hints) > 4 or hintIndex == 0:
                     logging.debug(f'Loaded {len(patterns):,d} from filtered cache for {hints} with {space} spaces for hintIndex {hintIndex}')
             except JSONDecodeError:
@@ -161,9 +163,9 @@ class HintPositionner:
 
         # If no patterns, load from unfiltered cache
         # Load from cache but catch errors in case file has issues
-        if len(patterns) == 0 and self._cacheEngine.hasKey(zoneCacheHash):
+        if len(patterns) == 0 and self._persistentCache.hasKey(zoneCacheHash):
             try:
-                patterns = self._cacheEngine.retrieve(zoneCacheHash)
+                patterns = self._persistentCache.retrieve(zoneCacheHash)
                 if len(hints) > 4 or hintIndex == 0:
                     logging.debug(f'Loaded {len(patterns):,d} from cache for {hints} with {space} spaces for hintIndex {hintIndex}')
             except JSONDecodeError:
@@ -213,7 +215,7 @@ class HintPositionner:
             # way too much data that is probably not reusable that much
             if len(hints) > 4 or hintIndex == 0:
                 logging.debug(f'Saving {len(patterns):,d} patterns to cache')
-                self._cacheEngine.save(zoneCacheHash, patterns)
+                self._persistentCache.save(zoneCacheHash, patterns)
 
         # Filter the patterns and return
         if filteringPattern != "" and filteringPattern != "." * space:
@@ -226,7 +228,7 @@ class HintPositionner:
             # way too much data that is probably not reusable that much
             if len(hints) > 4 or hintIndex == 0:
                 logging.debug(f'Saving {len(patterns):,d} patterns to filtered cache')
-                self._cacheEngine.save(zoneCacheHashWithFilter, patterns)
+                self._persistentCache.save(zoneCacheHashWithFilter, patterns)
         
         # Return the patterns
         if len(hints) > 4 or hintIndex == 0:

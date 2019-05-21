@@ -38,9 +38,10 @@ def changeAppliedWatcher(puzzle: Puzzle, strategy: Strategy):
 # Prepare the engine and ask it to solve the puzzle
 engine = EventDrivenEngine()
 cacheChain = CacheChain()
-cacheChain.addCache(MemoryCache())
+memoryCache = MemoryCache()
+cacheChain.addCache(memoryCache)
 cacheChain.addCache(FileCache(os.path.dirname(__file__) + '/cache'))
-engine.addStrategy(ChangeUsingHintPositionner(HintPositionner(cacheChain)))
+engine.addStrategy(ChangeUsingHintPositionner(HintPositionner(cacheChain, memoryCache)))
 engine.onChangesApplied(changeAppliedWatcher)
 solvedPuzzle = engine.solve(puzzle)
 
