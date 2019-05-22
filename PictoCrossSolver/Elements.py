@@ -303,7 +303,6 @@ class Puzzle:
         """
         return self._puzzleChanges
 
-    
     def applyChanges(self) -> 'Puzzle':
         """
         Returns a copy of this Puzzle with changes applied to the marks and no changes
@@ -332,6 +331,37 @@ class Puzzle:
             zoneCopy = puzzleCopy.getZone(change.getZoneType(), change.getZoneIndex())
             for mark in zoneCopy.getMarks()[change.getZoneSlice()]:
                 mark.setStatus(change.getAction())
+
+        # Return the copy
+        return puzzleCopy
+
+    def applyChange(self, change: PuzzleChange) -> 'Puzzle':
+        """
+        Returns a copy of this Puzzle with changes applied to the marks and no changes
+        in store in the Puzzle.
+        """
+
+        # Create a copy of self
+        puzzleCopy = self.__class__(len(self.getRowZones()), len(self.getColumnZones()))
+
+        # Update the copy's columns by setting the hints
+        for columnIndex, columnZone in enumerate(self.getColumnZones()):
+            columnZoneCopy = puzzleCopy.getColumnZone(columnIndex)
+            for hint in columnZone.getHints():
+                columnZoneCopy.addHint(hint)
+
+        # Update the copy's rows by setting the hints
+        for rowIndex, rowZone in enumerate(self.getRowZones()):
+            rowZoneCopy = puzzleCopy.getRowZone(rowIndex)
+            for hint in rowZone.getHints():
+                rowZoneCopy.addHint(hint)
+            for markIndex, mark in enumerate(rowZone.getMarks()):
+                rowZoneCopy.getMark(markIndex).setStatus(mark.getStatus())
+        
+        # Update the copy's zones by setting the status of marks
+        zoneCopy = puzzleCopy.getZone(change.getZoneType(), change.getZoneIndex())
+        for mark in zoneCopy.getMarks()[change.getZoneSlice()]:
+            mark.setStatus(change.getAction())
 
         # Return the copy
         return puzzleCopy
