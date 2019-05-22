@@ -1,5 +1,6 @@
 from typing import List
-from PictoCrossSolver.Elements import Puzzle
+from PictoCrossSolver.Renderers import ConsoleRenderer
+from PictoCrossSolver.Elements import Puzzle, ZoneType, Zone
 
 class TextPuzzleReader:
     """
@@ -70,3 +71,56 @@ class TextSolutionReader:
                 solution[index] = line.strip()
         
         return solution
+    
+class PuzzleBuilder:
+
+    def buildFromConsole(self) -> Puzzle:
+
+        # Read from the console until user is satisfied
+        # First step is to read all columns, each number entered generates a hint for current column or row
+        # If you don't enter anything, we go to next column or row. 
+        # If you don't enter any hint, it switches to rows when in columns or ends the puzzle builder
+
+        # First ask for the size and generate the puzzle base
+        x = None
+        y = None
+        while x == None:
+            try:
+                x = int(input(f'Please enter number of columns: '))
+            except:
+                print('Invalid number')
+
+        while y == None:
+            try:
+                y = int(input(f'Please enter number of rows: '))
+            except:
+                print('Invalid number')
+
+        puzzle = Puzzle(x, y)
+
+        # Next ask for each hints for each zone
+        zoneType = ZoneType.COLUMN
+        zoneIndex = 0
+        building = True
+        while building:
+
+            # Get the zone to work with
+            currentZone = puzzle.getZone(zoneType, zoneIndex)
+
+            # Ask for next hint, if hint is empty, move to next zone
+            try:
+                hint = input(f'Please enter next hint for {zoneType.name} #{zoneIndex + 1}: ')
+                currentZone.addHint(int(hint))
+            except ValueError:
+                zoneIndex += 1
+                if zoneType == ZoneType.COLUMN and len(puzzle.getColumnZones()) == zoneIndex:
+                    zoneType = ZoneType.ROW
+                    zoneIndex = 0
+                elif zoneType == ZoneType.ROW and len(puzzle.getRowZones()) == zoneIndex:
+                    building = False
+
+            # Print the puzzle as it is right now
+            renderer = ConsoleRenderer(puzzle)
+            renderer.render()
+
+        return puzzle

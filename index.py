@@ -3,7 +3,7 @@ import logging
 import os
 import argparse
 
-from PictoCrossSolver.Readers import TextPuzzleReader
+from PictoCrossSolver.Readers import TextPuzzleReader, PuzzleBuilder
 from PictoCrossSolver.Writers import SolutionWriter, InstructionWriter
 from PictoCrossSolver.Engines import EventDrivenEngine
 from PictoCrossSolver.Renderers import ConsoleRenderer
@@ -14,9 +14,9 @@ from PictoCrossSolver.Caches import FileCache, MemoryCache, CacheChain
 
 # Argument parser setup
 parser = argparse.ArgumentParser(description='Solves picture cross puzzles using puzzle files')
-parser.add_argument('puzzle', help='a puzzle file to solve')
-parser.add_argument('--instructions', '-i', default=False, action="store_true", dest="writeInstructions", help='Generate instructions, requires output directory')
-parser.add_argument('--solution', '-s', default=False, action="store_true", dest="writeSolution", help='Generate solution, requires output directory')
+parser.add_argument('puzzle', nargs="?", default=None, help='a puzzle file to solve')
+parser.add_argument('--write-instructions', default=False, action="store_true", dest="writeInstructions", help='Generate instructions, requires output directory')
+parser.add_argument('--write-solution', default=False, action="store_true", dest="writeSolution", help='Generate solution, requires output directory')
 parser.add_argument('--output-dir', '-o', default=os.getcwd(), dest="outputDirectory", help="Generate output files in this directory")
 parser.add_argument('--cache-dir', '-c', default=os.getcwd() + '/cache', dest="cacheDirectory", help="Generate and use cache files using this directory")
 parser.add_argument('--verbose', '-v', default=0, dest="verbose", action='count', help="Makes the engine more verbose")
@@ -36,8 +36,11 @@ changesLoggingHandler = logging.FileHandler(filename = args.outputDirectory + '/
 changesLoggingHandler.setLevel(logging.DEBUG)
 changesLogger.addHandler(changesLoggingHandler)
 
-# Load the puzzle from file
-puzzle = TextPuzzleReader.load(args.puzzle)
+# Load the puzzle from file if puzzle is set in args
+if args.puzzle:
+    puzzle = TextPuzzleReader.load(args.puzzle)
+else:
+    puzzle = PuzzleBuilder().buildFromConsole()
 
 # Change applied watcher
 def changeAppliedWatcher(puzzle: Puzzle, strategy: Strategy):
