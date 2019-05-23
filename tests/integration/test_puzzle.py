@@ -28,7 +28,7 @@ def getPuzzlesAndSolutions() -> []:
 @pytest.mark.parametrize("puzzle,solution", getPuzzlesAndSolutions())
 def test_eventDrivenEngine(puzzle: str, solution: str):
     """
-    Integration test for specific puzzle in Biggest Picture Cross - Animals - Puzzle 1,2
+    Integration test for specific puzzle in integration tests
     """
     
     # Load the puzzle and solution in memory

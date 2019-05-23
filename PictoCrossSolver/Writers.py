@@ -72,3 +72,34 @@ class InstructionWriter:
         # Put the instructions in a file
         with open(file, mode = "w") as fileStream:
             fileStream.write("\n".join(instructions))
+
+class PuzzleWriter:
+    """
+    Used to write the puzzle into the form of a text puzzle
+    """
+
+    @staticmethod
+    def write(file: str, puzzle: Puzzle):
+        """
+        Opens the file and then writes hints to a puzzle text file
+
+        @param str file to write
+        @param Puzzle puzzle to write
+        """
+
+        # Render each change as a string
+        hints = []
+        lines = []
+
+        for zone in puzzle.getColumnZones():
+            hints.append(",".join(map(lambda a: str(a), zone.getHints())))
+        lines.append("/".join(hints))
+        hints = []
+
+        for zone in puzzle.getRowZones():
+            hints.append(",".join(map(lambda a: str(a), zone.getHints())))
+        lines.append("/".join(hints))
+
+        # Put the instructions in a file
+        with open(file, mode = "w") as fileStream:
+            fileStream.write("\n".join(lines))
